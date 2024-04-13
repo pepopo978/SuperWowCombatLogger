@@ -29,6 +29,7 @@ def replace_instances(player_name, filename):
         "heals you": f"heals {player_name}",
         "you.": f"{player_name}.",
         "You fall and lose": f"{player_name} falls and loses",
+        r"'s Fireball\.": "'s FireballDot.",  # make fireball dot appear as a separate spell
         r'.*You fail to cast.*\n': '',
         r'.*You fail to perform.*\n': '',
     }
@@ -52,5 +53,5 @@ filename = input("Enter filename (defaults to WowCombatLog.txt if left empty): "
 if not filename.strip():
     filename = 'WowCombatLog.txt'
 
-replace_instances(player_name,filename)
-print(f"You has been converted to {player_name}.")
+replace_instances(player_name, filename)
+print(f"Messages with You/Your have been converted to {player_name}.")
