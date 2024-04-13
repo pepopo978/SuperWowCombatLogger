@@ -78,9 +78,9 @@ RPLL.CHAT_MSG_ADDON = function(prefix, msg, channel, sender)
 	if strfind(prefix, this.MESSAGE_PREFIX) ~= nil then
 		this.Synchronizers[sender] = true
 		if strfind(prefix, "LOOT") ~= nil then
-			CombatLogAdd("LOOT: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
+			CombatLogAdd("CONSOLIDATED: LOOT: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
 		elseif strfind(prefix, "PET") ~= nil then
-			CombatLogAdd("PET: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
+			CombatLogAdd("CONSOLIDATED: PET: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
 		elseif strfind(prefix, "COMBATANT_INFO") ~= nil then
 			local split = strsplit(msg, "&")
 			local player_info = {}
@@ -139,6 +139,12 @@ RPLL.PLAYER_ENTERING_WORLD = function()
 		return
 	end
 	initialized = true
+
+	-- add (1) for first stack of buffs/debuffs
+    AURAADDEDOTHERHELPFUL = "%s gains %s (1)."
+    AURAADDEDOTHERHARMFUL = "%s is afflicted by %s (1)."
+    AURAADDEDSELFHARMFUL = "You are afflicted by %s (1)."
+    AURAADDEDSELFHELPFUL = "You gain %s (1)."
 
 	if RPLL_PlayerInformation == nil then
 		RPLL_PlayerInformation = {}
