@@ -27,6 +27,8 @@ RPLL:RegisterEvent("PLAYER_AURAS_CHANGED")
 RPLL:RegisterEvent("CHAT_MSG_ADDON")
 RPLL:RegisterEvent("UNIT_INVENTORY_CHANGED")
 
+RPLL:RegisterEvent("UNIT_CASTEVENT")
+
 local tinsert = table.insert
 local UnitName = UnitName
 local strsub = string.sub
@@ -115,6 +117,21 @@ end
 
 RPLL.UNIT_INVENTORY_CHANGED = function(unit)
 	this:grab_unit_information(unit)
+end
+
+RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
+	local trackedSpells = {
+		[9907] = "Faerie Fire",
+		[17392] = "Faerie Fire (Feral)",
+		[11597] = "Sunder Armor",
+	} --only tracking max rank 
+	local unitName = UnitName(target) --convert GUID to name
+	local casterName = UnitName(caster)
+	for key, value in pairs(trackedSpells) do
+		if key == spellID then
+			CombatLogAdd(casterName .. " 's " .. value .. " hits " .. unitName .. " for 0.")
+		end
+	end
 end
 
 RPLL.ZONE_CHANGED_NEW_AREA = function()

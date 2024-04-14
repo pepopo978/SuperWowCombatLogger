@@ -10,3 +10,4 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
 ```
 - In order to upload to monkeylogs/legacy logs need to run `convert_you.py` on your WowCombatLog.txt
 - Fireball dot ticks are renamed so that you can view fireball casts separately from the dot ticks.
+- Tracks Sunder Armor and Faerie Fire casts.
