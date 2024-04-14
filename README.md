@@ -10,8 +10,8 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
 ```
 - In order to upload to monkeylogs/legacy logs need to run `convert_you.py` on your WowCombatLog.txt
 - The dot component of the following spells have been renamed to allow viewing casts of those spells independently from ticks:
-Fireball Dot  -> Improved Fireball
-Pyroblast Dot -> Pyroclast Barrage
-Immolate Dot  -> Improved Immolate
-Moonfire Dot  -> Improved Moonfire
+    - Fireball Dot  -> Improved Fireball
+    - Pyroblast Dot -> Pyroclast Barrage
+    - Immolate Dot  -> Improved Immolate
+    - Moonfire Dot  -> Improved Moonfire
 - Tracks Sunder Armor and Faerie Fire casts.
