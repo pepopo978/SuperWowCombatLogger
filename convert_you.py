@@ -6,6 +6,7 @@ def replace_instances(player_name, filename):
     player_name = player_name.strip().capitalize()
     # Define the instances to replace and their replacements
     replacements = {
+        "'s": " 's",  # add space after playernames before possessive
         "Your": f"{player_name} 's",
         "You gain": f"{player_name} gains",
         "You hit": f"{player_name} hits",
@@ -39,7 +40,7 @@ def replace_instances(player_name, filename):
     }
 
     # create backup of original file
-    backup_filename = filename.replace(".txt","") + ".original.txt"
+    backup_filename = filename.replace(".txt", "") + ".original.txt"
     shutil.copyfile(filename, backup_filename)
 
     # Read the contents of the file
@@ -62,4 +63,4 @@ if not filename.strip():
     filename = 'WowCombatLog.txt'
 
 replace_instances(player_name, filename)
-print(f"Messages with You/Your have been converted to {player_name}.")
+print(f"Messages with You/Your have been converted to {player_name}.  A backup of the original file has also been created.")
