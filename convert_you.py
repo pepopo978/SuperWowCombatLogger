@@ -39,7 +39,7 @@ def replace_instances(player_name, filename):
     }
 
     # create backup of original file
-    backup_filename = filename + "_backup.txt"
+    backup_filename = filename.replace(".txt","") + ".original.txt"
     shutil.copyfile(filename, backup_filename)
 
     # Read the contents of the file
