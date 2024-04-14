@@ -1,4 +1,5 @@
 import re
+import shutil
 
 
 def replace_instances(player_name, filename):
@@ -29,13 +30,20 @@ def replace_instances(player_name, filename):
         "heals you": f"heals {player_name}",
         "you.": f"{player_name}.",
         "You fall and lose": f"{player_name} falls and loses",
-        r"'s Fireball\.": "'s FireballDot.",  # make fireball dot appear as a separate spell
+        r"'s Fireball\.": "'s Improved Fireball.",  # make fireball dot appear as a separate spell
+        r"'s Pyroblast\.": "'s Pyroclast Barrage.",  # make Pyroblast dot appear as a separate spell
+        r"'s Immolate\.": "'s Improved Immolate.",  # make Immolate dot appear as a separate spell
+        r"'s Moonfire\.": "'s Improved Moonfire.",  # make Immolate dot appear as a separate spell
         r'.*You fail to cast.*\n': '',
         r'.*You fail to perform.*\n': '',
     }
 
+    # create backup of original file
+    backup_filename = filename + "_backup.txt"
+    shutil.copyfile(filename, backup_filename)
+
     # Read the contents of the file
-    with open(filename, 'r') as file:
+    with open(filename, 'r', encoding='utf-8') as file:
         text = file.read()
 
     # Perform replacements
@@ -43,7 +51,7 @@ def replace_instances(player_name, filename):
         text = re.sub(pattern, replacement, text)
 
     # Write the modified text back to the file
-    with open(filename, 'w') as file:
+    with open(filename, 'w', encoding='utf-8') as file:
         file.write(text)
 
 
