@@ -49,7 +49,7 @@ def replace_instances(player_name, filename):
 
     # Perform replacements
     for pattern, replacement in replacements.items():
-        text = re.sub(pattern, replacement, text)
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
     # Write the modified text back to the file
     with open(filename, 'w', encoding='utf-8') as file:
