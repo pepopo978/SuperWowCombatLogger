@@ -125,11 +125,11 @@ RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 		[17392] = "Faerie Fire (Feral)",
 		[11597] = "Sunder Armor",
 	} --only tracking max rank 
-	local unitName = UnitName(target) --convert GUID to name
-	local casterName = UnitName(caster)
 	for key, value in pairs(trackedSpells) do
 		if key == spellID then
-			CombatLogAdd(casterName .. " 's " .. value .. " hits " .. unitName .. " for 0.")
+			local targetName = UnitName(target) --get name from GUID
+			local casterName = UnitName(caster)
+			CombatLogAdd(casterName .. " 's " .. value .. " hits " .. targetName .. " for 0.")
 		end
 	end
 end
