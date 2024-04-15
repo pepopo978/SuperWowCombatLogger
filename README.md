@@ -28,4 +28,8 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
     - Pyroblast Dot -> Pyroclast Barrage
     - Immolate Dot  -> Improved Immolate
     - Moonfire Dot  -> Improved Moonfire
+- The following were renamed as their spells don't exist in legacy/monkey databases:
+    - Burning Hatred -> Burning Flesh (Ornate bloodstone dagger proc)
+    - Fire Rune -> Fire Storm (Flarecore 6 set proc)
+    - Spirit Link -> Spirit Bond
 - Tracks Sunder Armor and Faerie Fire casts.
