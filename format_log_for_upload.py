@@ -11,9 +11,9 @@ def replace_instances(player_name, filename):
     you_replacements = {
         r'.*You fail to cast.*\n': '',
         r'.*You fail to perform.*\n': '',
-        r"You suffer (.*?) from your": f"{player_name} suffers \g<1> from {player_name}(selfdamage) 's",
+        r"You suffer (.*?) from your": rf"{player_name} suffers \g<1> from {player_name}(selfdamage) 's",
         # handle self damage
-        r"Your (.*?) hits you for": f"{player_name}(selfdamage) 's \g<1> hits Pepopo for",  # handle self damage
+        r"Your (.*?) hits you for": rf"{player_name}(selfdamage) 's \g<1> hits Pepopo for",  # handle self damage
 
         r" [Yy]our ": f" {player_name} 's ",
         "You gain": f"{player_name} gains",
@@ -41,16 +41,16 @@ def replace_instances(player_name, filename):
         "heals you": f"heals {player_name}",
         "hits you for": f"hits {player_name} for",
         "crits you for": f"crits {player_name} for",
-        r"(\S)\syou\.": f"\g<1> {player_name}.",  # non whitespace character followed by whitespace followed by you
+        r"(\S)\syou\.": rf"\g<1> {player_name}.",  # non whitespace character followed by whitespace followed by you
         "You fall and lose": f"{player_name} falls and loses",
     }
 
     # Generic replacements have 2nd priority
     # Only the first match will be replaced
     generic_replacements = {
-        " fades from .*\.": "\g<0>",  # some buffs/debuffs have 's in them, need to ignore these lines
-        " gains .*\)\.": "\g<0>",  # some buffs/debuffs have 's in them, need to ignore these lines
-        " is afflicted by .*\)\.": "\g<0>",  # some buffs/debuffs have 's in them, need to ignore these lines
+        r" fades from .*\.": r"\g<0>",  # some buffs/debuffs have 's in them, need to ignore these lines
+        r" gains .*\)\.": r"\g<0>",  # some buffs/debuffs have 's in them, need to ignore these lines
+        r" is afflicted by .*\)\.": r"\g<0>",  # some buffs/debuffs have 's in them, need to ignore these lines
 
         # handle 's at beginning of line by looking for [double space] [playername] [Capital letter]
         r"  ([a-zA-Z ]*?\S)'s ([A-Z])": r"  \g<1> 's \g<2>",
@@ -70,6 +70,10 @@ def replace_instances(player_name, filename):
         # Burning Hatred custom twow spell not in logging database so it doesn't show up
         " Fire Rune": " Fire Storm",  # Fire rune is proc from flarecore 6 set
         " Spirit Link": " Spirit Bond",  # Shaman spell
+
+        # convert totem spells to appear as though the shaman cast them so that player gets credit
+        r"  [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r"  \g<1> 's",
+        r" from [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r" from \g<1> 's",
     }
 
     # create backup of original file
