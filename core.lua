@@ -124,6 +124,11 @@ RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 		[9907] = "Faerie Fire",
 		[17392] = "Faerie Fire (Feral)",
 		[11597] = "Sunder Armor",
+		[11722] = "Curse of the Elements",
+		[11717] = "Curse of Recklessness",
+		[17937] = "Curse of Shadow",
+		[11708] = "Curse of Weakness",
+		[11719] = "Curse of Tongues"
 	} --only tracking max rank 
 	for key, value in pairs(trackedSpells) do
 		if key == spellID then
