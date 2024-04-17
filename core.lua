@@ -7,14 +7,12 @@ RPLL.MESSAGE_PREFIX = "RPLL_HELPER_"
 RPLL.PlayerInformation = {}
 RPLL.Synchronizers = {}
 
-RPLL:RegisterEvent("PLAYER_TARGET_CHANGED")
 RPLL:RegisterEvent("RAID_ROSTER_UPDATE")
 RPLL:RegisterEvent("PARTY_MEMBERS_CHANGED")
 
 RPLL:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 RPLL:RegisterEvent("UPDATE_INSTANCE_INFO")
 
-RPLL:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
 RPLL:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 RPLL:RegisterEvent("UNIT_PET")
@@ -22,7 +20,6 @@ RPLL:RegisterEvent("PLAYER_PET_CHANGED")
 RPLL:RegisterEvent("PET_STABLE_CLOSED")
 
 RPLL:RegisterEvent("CHAT_MSG_LOOT")
-RPLL:RegisterEvent("PLAYER_AURAS_CHANGED")
 
 RPLL:RegisterEvent("CHAT_MSG_ADDON")
 RPLL:RegisterEvent("UNIT_INVENTORY_CHANGED")
@@ -177,14 +174,6 @@ RPLL.PLAYER_ENTERING_WORLD = function()
 	this:PARTY_MEMBERS_CHANGED()
 end
 
-RPLL.PLAYER_TARGET_CHANGED = function()
-	this:grab_unit_information("target")
-end
-
-RPLL.UPDATE_MOUSEOVER_UNIT = function()
-	this:grab_unit_information("mouseover")
-end
-
 RPLL.RAID_ROSTER_UPDATE = function()
 	for i = 1, GetNumRaidMembers() do
 		if UnitName("raid" .. i) then
@@ -219,10 +208,6 @@ RPLL.CHAT_MSG_LOOT = function(msg)
 	if not this:ContainsSynchronizer(msg) then
 		CombatLogAdd("LOOT: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
 	end
-end
-
-RPLL.PLAYER_AURAS_CHANGED = function()
-	this:grab_unit_information("player")
 end
 
 function RPLL:ContainsSynchronizer(msg)
