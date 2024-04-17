@@ -22,7 +22,6 @@ RPLL:RegisterEvent("PET_STABLE_CLOSED")
 
 RPLL:RegisterEvent("CHAT_MSG_LOOT")
 
-RPLL:RegisterEvent("CHAT_MSG_ADDON")
 RPLL:RegisterEvent("UNIT_INVENTORY_CHANGED")
 
 RPLL:RegisterEvent("UNIT_CASTEVENT")
@@ -72,45 +71,6 @@ local function strsplit(pString, pPattern)
 		table.insert(Table, cap)
 	end
 	return Table
-end
-
-RPLL.CHAT_MSG_ADDON = function(prefix, msg, channel, sender)
-	if strfind(prefix, this.MESSAGE_PREFIX) ~= nil then
-		this.Synchronizers[sender] = true
-		if strfind(prefix, "LOOT") ~= nil then
-			CombatLogAdd("LOOT: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
-		elseif strfind(prefix, "PET") ~= nil then
-			CombatLogAdd("PET: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
-		elseif strfind(prefix, "COMBATANT_INFO") ~= nil then
-			local split = strsplit(msg, "&")
-			local player_info = {}
-			if split[1] == "nil" or split[2] == "nil" or split[3] == "nil" or split[4] == "nil" or split[28] == "nil" then
-				return
-			end
-
-			player_info["last_update_date"] = date("%d.%m.%y %H:%M:%S")
-			player_info["last_update"] = time()
-			player_info["name"] = split[1]
-			player_info["race"] = split[2]
-			player_info["hero_class"] = split[3]
-			player_info["sex"] = split[4]
-			if split[5] ~= "nil" then
-				player_info["guild_name"] = split[5]
-				player_info["guild_rank_name"] = split[6]
-				player_info["guild_rank_index"] = split[7]
-			end
-			player_info["gear"] = {}
-			for i = 8, 27 do
-				if split[i] ~= "nil" then
-					player_info["gear"][i] = split[i]
-				end
-			end
-			player_info["talents"] = split[28]
-			this.PlayerInformation[sender] = player_info
-
-			log_combatant_info(player_info)
-		end
-	end
 end
 
 RPLL.UNIT_INVENTORY_CHANGED = function(unit)
