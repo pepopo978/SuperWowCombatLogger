@@ -92,7 +92,7 @@ RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 		if key == spellID then
 			local targetName = UnitName(target) --get name from GUID
 			local casterName = UnitName(caster)
-			CombatLogAdd(casterName .. " casts " .. value .. " on " .. targetName ..".")
+			CombatLogAdd(casterName .. " casts " .. value .. " on " .. targetName .. ".")
 		end
 	end
 end
