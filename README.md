@@ -1,7 +1,7 @@
 # Installation
 This requires https://github.com/balakethelock/SuperWoW to work.
 
-Remove `AdvancedVanillaCombatLog` directory from your addons folder if it existed but leave `AdvancedVanillaCombatLog_Helper`.   
+Remove `AdvancedVanillaCombatLog` directory from your addons folder if it existed.
 
 Place `SuperWowCombatLogger` in Interface/Addons.
 
@@ -13,6 +13,7 @@ Copy this python file to the same directory as your WowCombatLog.txt and run `py
 Fill in your player name and the name of your log file when prompted, then zip the new WowCombatLog.txt and upload it to monkey/legacy logs.
 
 # Changes from AdvancedVanillaCombatLog
+- No longer requires any raiders to run the AdvancedVanillaCombatLog_Helper addon.
 - No longer need to spam failure messages to write to the log
 - No longer overwrites all of the combat event format strings to change you -> playername.  This would break addons like bigwigs that looked for messages like "You have been afflicted by Poison Charge".
 It does still overwrite the initial debuff/buff events to add a (1) because I deemed it unlikely to break other addons and is convenient compared to editing those messages after the fact.
