@@ -78,9 +78,9 @@ RPLL.CHAT_MSG_ADDON = function(prefix, msg, channel, sender)
 	if strfind(prefix, this.MESSAGE_PREFIX) ~= nil then
 		this.Synchronizers[sender] = true
 		if strfind(prefix, "LOOT") ~= nil then
-			CombatLogAdd("CONSOLIDATED: LOOT: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
+			CombatLogAdd("LOOT: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
 		elseif strfind(prefix, "PET") ~= nil then
-			CombatLogAdd("CONSOLIDATED: PET: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
+			CombatLogAdd("PET: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
 		elseif strfind(prefix, "COMBATANT_INFO") ~= nil then
 			local split = strsplit(msg, "&")
 			local player_info = {}
