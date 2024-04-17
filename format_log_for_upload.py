@@ -13,7 +13,7 @@ def replace_instances(player_name, filename):
         r'.*You fail to perform.*\n': '',
         r"You suffer (.*?) from your": rf"{player_name} suffers \g<1> from {player_name}(selfdamage) 's",
         # handle self damage
-        r"Your (.*?) hits you for": rf"{player_name}(selfdamage) 's \g<1> hits Pepopo for",  # handle self damage
+        r"Your (.*?) hits you for": rf"{player_name}(selfdamage) 's \g<1> hits {player_name} for",  # handle self damage
 
         r" [Yy]our ": f" {player_name} 's ",
         "You gain": f"{player_name} gains",
