@@ -6,6 +6,7 @@ RPLL.MESSAGE_PREFIX = "RPLL_HELPER_"
 
 RPLL.PlayerInformation = {}
 RPLL.Synchronizers = {}
+RPLL.LoggedCombatantInfo = {}
 
 RPLL:RegisterEvent("RAID_ROSTER_UPDATE")
 RPLL:RegisterEvent("PARTY_MEMBERS_CHANGED")
@@ -142,6 +143,7 @@ RPLL.ZONE_CHANGED_NEW_AREA = function()
 	this:RAID_ROSTER_UPDATE()
 	this:PARTY_MEMBERS_CHANGED()
 	this:QueueRaidIds()
+	RPLL.LoggedCombatantInfo = {}
 end
 
 RPLL.UPDATE_INSTANCE_INFO = function()
@@ -160,10 +162,10 @@ RPLL.PLAYER_ENTERING_WORLD = function()
 	initialized = true
 
 	-- add (1) for first stack of buffs/debuffs
-    AURAADDEDOTHERHELPFUL = "%s gains %s (1)."
-    AURAADDEDOTHERHARMFUL = "%s is afflicted by %s (1)."
-    AURAADDEDSELFHARMFUL = "You are afflicted by %s (1)."
-    AURAADDEDSELFHELPFUL = "You gain %s (1)."
+	AURAADDEDOTHERHELPFUL = "%s gains %s (1)."
+	AURAADDEDOTHERHARMFUL = "%s is afflicted by %s (1)."
+	AURAADDEDSELFHARMFUL = "You are afflicted by %s (1)."
+	AURAADDEDSELFHELPFUL = "You gain %s (1)."
 
 	if RPLL_PlayerInformation == nil then
 		RPLL_PlayerInformation = {}
@@ -364,14 +366,33 @@ end
 
 function log_combatant_info(character)
 	if character ~= nil then
-		local result = "COMBATANT_INFO: " .. prep_value(character["last_update_date"]) .. "&"
+		local num_nil_gear = 0
+		if character["gear"][1] == nil then
+			num_nil_gear = num_nil_gear + 1
+		end
+
 		local gear_str = prep_value(character["gear"][1])
 		for i = 2, 19 do
+			if character["gear"][i] == nil then
+				num_nil_gear = num_nil_gear + 1
+			end
+
 			gear_str = gear_str .. "&" .. prep_value(character["gear"][i])
 		end
 
-		result = result .. prep_value(character["name"]) .. "&" .. prep_value(character["hero_class"]) .. "&" .. prep_value(character["race"]) .. "&" .. prep_value(character["sex"]) .. "&" .. prep_value(character["pet"]) .. "&" .. prep_value(character["guild_name"]) .. "&" .. prep_value(character["guild_rank_name"]) .. "&" .. prep_value(character["guild_rank_index"]) .. "&" .. gear_str .. "&" .. prep_value(character["talents"])
-		CombatLogAdd(result)
+		-- If all gear is nil, don't log
+		if num_nil_gear == 19 then
+			return
+		end
+
+		local result = prep_value(character["name"]) .. "&" .. prep_value(character["hero_class"]) .. "&" .. prep_value(character["race"]) .. "&" .. prep_value(character["sex"]) .. "&" .. prep_value(character["pet"]) .. "&" .. prep_value(character["guild_name"]) .. "&" .. prep_value(character["guild_rank_name"]) .. "&" .. prep_value(character["guild_rank_index"]) .. "&" .. gear_str .. "&" .. prep_value(character["talents"])
+
+		if not RPLL.LoggedCombatantInfo[result] then
+			local result_prefix = "COMBATANT_INFO: " .. prep_value(character["last_update_date"]) .. "&"
+			CombatLogAdd(result_prefix .. result)
+			RPLL.LoggedCombatantInfo[result] = true
+		end
+
 	end
 end
 
