@@ -20,7 +20,14 @@ def handle_replacements(line, replacements):
 def replace_instances(player_name, filename):
     player_name = player_name.strip().capitalize()
 
-    # Pet replacements have top priority
+    # Mob names with apostrophes have top priority
+    # only the first match will be replaced
+    mob_names_with_apostrophe = {
+        "Onyxia's Elite Guard": "Onyxias Elite Guard",
+        "Sartura's Royal Guard": "Sarturas Royal Guard",
+    }
+
+    # Pet replacements have next priority
     # only the first match will be replaced
     pet_replacements = {
         r"  ([a-zzA-Z]+) \(([a-zzA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
@@ -30,8 +37,8 @@ def replace_instances(player_name, filename):
         # other pet logs, need to remove space otherwise not parsed correctly
     }
 
-    # You replacements have next highest priority
-    # Only the first match will be replaced
+    # You replacements have next priority
+    # Only the first two matches will be replaced
     you_replacements = {
         r'.*You fail to cast.*\n': '',
         r'.*You fail to perform.*\n': '',
@@ -62,6 +69,7 @@ def replace_instances(player_name, filename):
         "You reflect": f"{player_name} reflects",
         "You receive": f"{player_name} receives",
         "You deflect": f"{player_name} deflects",
+        "causes you": f"causes {player_name}",
         "heals you": f"heals {player_name}",
         "hits you for": f"hits {player_name} for",
         "crits you for": f"crits {player_name} for",
@@ -77,8 +85,8 @@ def replace_instances(player_name, filename):
         r" is afflicted by .*\)\.": r"\g<0>",  # some buffs/debuffs have 's in them, need to ignore these lines
 
         # handle 's at beginning of line by looking for [double space] [playername] [Capital letter]
-        r"  ([a-zA-Z ]*?\S)'s ([A-Z])": r"  \g<1> 's \g<2>",
-        r"from ([a-zA-Z ]*?\S)'s ([A-Z])": r"from \g<1> 's \g<2>",  # handle 's in middle of line by looking for 'from'
+        r"  ([a-zA-Z' ]*?\S)'s ([A-Z])": r"  \g<1> 's \g<2>",
+        r"from ([a-zA-Z' ]*?\S)'s ([A-Z])": r"from \g<1> 's \g<2>",  # handle 's in middle of line by looking for 'from'
         r"\)'s ([A-Z])": r") 's \g<1>",  # handle 's for pets
     }
 
@@ -100,6 +108,9 @@ def replace_instances(player_name, filename):
         # convert totem spells to appear as though the shaman cast them so that player gets credit
         r"  [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r"  \g<1> 's",
         r" from [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r" from \g<1> 's",
+
+        "Onyxias Elite Guard": "Onyxia's Elite Guard", # readd apostrophes
+        "Sarturas Royal Guard": "Sartura's Royal Guard",
     }
 
     # create backup of original file
@@ -129,7 +140,10 @@ def replace_instances(player_name, filename):
     # Perform replacements
     # enumerate over lines to be able to modify the list in place
     for i, _ in enumerate(lines):
-        # handle hunter pets first, then process other rules
+        # mob names with apostrophe
+        lines[i] = handle_replacements(lines[i], mob_names_with_apostrophe)
+
+        # handle pets
         for pet_name in pet_names:
             if pet_name in lines[i]:
                 lines[i] = handle_replacements(lines[i], pet_replacements)
@@ -137,6 +151,8 @@ def replace_instances(player_name, filename):
         # if line contains you/You
         if "you" in lines[i] or "You" in lines[i]:
             lines[i] = handle_replacements(lines[i], you_replacements)
+            lines[i] = handle_replacements(lines[i],
+                                           you_replacements)  # when casting ability on yourself need to do two replacements
 
         # generic replacements
         lines[i] = handle_replacements(lines[i], generic_replacements)
