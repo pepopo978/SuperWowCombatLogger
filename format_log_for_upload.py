@@ -166,9 +166,9 @@ def replace_instances(player_name, filename):
 
 
 player_name = input("Enter player name: ")
-filename = input("Enter filename (defaults to WowCombatLog.txt if left empty): ")
+filename = input("Enter filename (defaults to WoWCombatLog.txt if left empty): ")
 if not filename.strip():
-    filename = 'WowCombatLog.txt'
+    filename = 'WoWCombatLog.txt'
 
 replace_instances(player_name, filename)
 print(
