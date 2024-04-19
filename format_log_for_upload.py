@@ -3,10 +3,34 @@ import shutil
 import time
 
 
+def handle_replacements(line, replacements):
+    for pattern, replacement in replacements.items():
+        try:
+            new_text, num_subs = re.subn(pattern, replacement, line)
+        except Exception as e:
+            print(f"Error replacing pattern: {pattern} with replacement: {replacement}")
+            print(f"Line: {line}")
+            raise e
+        if num_subs:
+            return new_text
+
+    return line
+
+
 def replace_instances(player_name, filename):
     player_name = player_name.strip().capitalize()
 
-    # You replacements have top priority
+    # Pet replacements have top priority
+    # only the first match will be replaced
+    pet_replacements = {
+        r"  ([a-zzA-Z]+) \(([a-zzA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
+        # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
+        r"  ([a-zzA-Z]+) \(([a-zzA-Z]+)\)'s": r"  \g<1>'s Pet Summoned \g<2>",  # pet ability
+        r"([a-zzA-Z]+) \(([a-zzA-Z]+)\)": r"\g<1>(\g<2>)",
+        # other pet logs, need to remove space otherwise not parsed correctly
+    }
+
+    # You replacements have next highest priority
     # Only the first match will be replaced
     you_replacements = {
         r'.*You fail to cast.*\n': '',
@@ -86,39 +110,45 @@ def replace_instances(player_name, filename):
     with open(filename, 'r', encoding='utf-8') as file:
         lines = file.readlines()
 
+    # collect pet names
+    # 4/14 20:51:43.354  COMBATANT_INFO: 14.04.24 20:51:43&Hunter&HUNTER&Dwarf&2&PetName <- pet name
+    pet_names = set()
+    for line in lines:
+        if "COMBATANT_INFO" in line:
+            try:
+                line_parts = line.split("&")
+                pet_name = line_parts[5]
+                if pet_name != "nil" and pet_name != "Razorgore the Untamed":
+                    pet_names.add(pet_name)
+            except Exception as e:
+                print(f"Error parsing pet name from line: {line}")
+                print(e)
+
+    print(f"The follow pet hits/crits/misses/spells will be associated with their owner: {pet_names}")
+
     # Perform replacements
     # enumerate over lines to be able to modify the list in place
-    for i, line in enumerate(lines):
+    for i, _ in enumerate(lines):
+        # handle hunter pets first, then process other rules
+        for pet_name in pet_names:
+            if pet_name in lines[i]:
+                lines[i] = handle_replacements(lines[i], pet_replacements)
+
         # if line contains you/You
-        if "you" in line or "You" in line:
-            for pattern, replacement in you_replacements.items():
-                new_text, num_subs = re.subn(pattern, replacement, line)
-                if num_subs:
-                    line = new_text
-                    lines[i] = line
+        if "you" in lines[i] or "You" in lines[i]:
+            lines[i] = handle_replacements(lines[i], you_replacements)
 
         # generic replacements
-        for pattern, replacement in generic_replacements.items():
-            new_text, num_subs = re.subn(pattern, replacement, line)
-            if num_subs:
-                line = new_text
-                lines[i] = line
-                break
+        lines[i] = handle_replacements(lines[i], generic_replacements)
 
         # renames
-        for pattern, replacement in renames.items():
-            new_text, num_subs = re.subn(pattern, replacement, line)
-            if num_subs:
-                line = new_text
-                lines[i] = line
-                break
+        lines[i] = handle_replacements(lines[i], renames)
 
     # Write the modified text back to the file
     with open(filename, 'w', encoding='utf-8') as file:
         file.writelines(lines)
 
 
-# Example usage
 player_name = input("Enter player name: ")
 filename = input("Enter filename (defaults to WowCombatLog.txt if left empty): ")
 if not filename.strip():
