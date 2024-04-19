@@ -25,7 +25,7 @@ def replace_instances(player_name, filename):
     pet_replacements = {
         r"  ([a-zzA-Z]+) \(([a-zzA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
         # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
-        r"  ([a-zzA-Z]+) \(([a-zzA-Z]+)\)'s": r"  \g<1>'s Pet Summoned \g<2>",  # pet ability
+        r"  ([a-zzA-Z]+) \(([a-zzA-Z]+)\)'s": r"  \g<2>'s",  # pet ability
         r"([a-zzA-Z]+) \(([a-zzA-Z]+)\)": r"\g<1>(\g<2>)",
         # other pet logs, need to remove space otherwise not parsed correctly
     }
