@@ -109,8 +109,14 @@ def replace_instances(player_name, filename):
         r"  [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r"  \g<1> 's",
         r" from [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r" from \g<1> 's",
 
-        "Onyxias Elite Guard": "Onyxia's Elite Guard", # readd apostrophes
+        "Onyxias Elite Guard": "Onyxia's Elite Guard",  # readd apostrophes
         "Sarturas Royal Guard": "Sartura's Royal Guard",
+    }
+
+    # check for players hitting themselves
+    self_damage = {
+        r"  ([a-zA-Z' ]*?) suffers (.*) damage from ([a-zA-Z' ]*?) 's": r"  \g<1> suffers \g<2> damage from \g<3>(selfdamage) 's",
+        r"([a-zA-Z' ]*?) 's (.*) ([a-zA-Z' ]*?) for": r"\g<1>(selfdamage) 's \g<2> \g<3> for",
     }
 
     # create backup of original file
@@ -159,6 +165,14 @@ def replace_instances(player_name, filename):
 
         # renames
         lines[i] = handle_replacements(lines[i], renames)
+
+        # self damage
+        for pattern, replacement in self_damage.items():
+            match = re.search(pattern, lines[i])
+            # check that group 1 and 3 are equal meaning the player is hitting themselves
+            if match and match.group(1) == match.group(3):
+                lines[i] = handle_replacements(lines[i], {pattern: replacement})
+                break
 
     # Write the modified text back to the file
     with open(filename, 'w', encoding='utf-8') as file:
