@@ -129,7 +129,7 @@ def replace_instances(player_name, filename):
             try:
                 line_parts = line.split("&")
                 pet_name = line_parts[5]
-                if pet_name != "nil" and pet_name != "Razorgore the Untamed":
+                if pet_name != "nil" and pet_name != "Razorgore the Untamed" and pet_name != "Deathknight Understudy":
                     pet_names.add(pet_name)
             except Exception as e:
                 print(f"Error parsing pet name from line: {line}")
