@@ -47,7 +47,10 @@ def replace_instances(player_name, filename):
         r"Your (.*?) hits you for": rf"{player_name}(selfdamage) 's \g<1> hits {player_name} for",  # handle self damage
 
         r" [Yy]our ": f" {player_name} 's ",
-        "You gain": f"{player_name} gains",
+        "You gain (.*?) from (.*?)'s": f"{player_name} gains \g<1> from \g<2> 's",
+        # handle gains from other players spells
+        "You gain (.*?) from ": f"{player_name} gains \g<1> from {player_name} 's ",  # handle gains from your own spells
+        "You gain": f"{player_name} gains",  # handle buff gains
         "You hit": f"{player_name} hits",
         "You crit": f"{player_name} crits",
         "You are": f"{player_name} is",
