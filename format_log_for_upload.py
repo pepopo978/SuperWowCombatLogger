@@ -207,7 +207,7 @@ if not filename.strip():
 create_zip = input("Create zip file (default y): ")
 
 replace_instances(player_name, filename)
-if not create_zip.strip() or create_zip.lower().startswith() == 'y':
+if not create_zip.strip() or create_zip.lower().startswith('y'):
     create_zip_file(filename, filename + ".zip")
 print(
     f"Messages with You/Your have been converted to {player_name}.  A backup of the original file has also been created.")
