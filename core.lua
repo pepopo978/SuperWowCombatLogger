@@ -92,7 +92,9 @@ RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 		if key == spellID then
 			local targetName = UnitName(target) --get name from GUID
 			local casterName = UnitName(caster)
-			CombatLogAdd(casterName .. " casts " .. value .. " on " .. targetName .. ".")
+			-- seems like on razorgore either caster or target can be null here
+			-- probably related to MC
+			CombatLogAdd(tostring(casterName) .. " casts " .. value .. " on " .. tostring(targetName) .. ".")
 		end
 	end
 end

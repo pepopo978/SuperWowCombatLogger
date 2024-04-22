@@ -1,6 +1,8 @@
+import os
 import re
 import shutil
 import time
+import zipfile
 
 
 def handle_replacements(line, replacements):
@@ -181,12 +183,19 @@ def replace_instances(player_name, filename):
     with open(filename, 'w', encoding='utf-8') as file:
         file.writelines(lines)
 
+def create_zip_file(source_file, zip_filename):
+    with zipfile.ZipFile(zip_filename, 'w') as zipf:
+        zipf.write(source_file, arcname=os.path.basename(source_file))
 
 player_name = input("Enter player name: ")
 filename = input("Enter filename (defaults to WoWCombatLog.txt if left empty): ")
 if not filename.strip():
     filename = 'WoWCombatLog.txt'
 
+create_zip = input("Create zip file (default y): ")
+
 replace_instances(player_name, filename)
+if not create_zip.strip() or create_zip.lower().startswith() == 'y':
+    create_zip_file(filename, filename + ".zip")
 print(
     f"Messages with You/Your have been converted to {player_name}.  A backup of the original file has also been created.")
