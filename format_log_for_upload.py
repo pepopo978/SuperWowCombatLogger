@@ -136,6 +136,7 @@ def replace_instances(player_name, filename):
     # collect pet names
     # 4/14 20:51:43.354  COMBATANT_INFO: 14.04.24 20:51:43&Hunter&HUNTER&Dwarf&2&PetName <- pet name
     pet_names = set()
+    owner_names = set()
     for i, _ in enumerate(lines):
         # DPSMate logs have " 's" already which will break some of our parsing, remove the space
         lines[i] = lines[i].replace(" 's", "'s")
@@ -144,7 +145,8 @@ def replace_instances(player_name, filename):
                 line_parts = lines[i].split("&")
                 pet_name = line_parts[5]
                 if pet_name != "nil" and pet_name != "Razorgore the Untamed" and pet_name != "Deathknight Understudy":
-                    pet_names.add(f"({pet_name})")
+                    pet_names.add(f"{pet_name}")
+                    owner_names.add(f"({line_parts[1]})")
                 # remove pet name from uploaded combatant info, can cause player to not appear in logs if pet name
                 # is a player name or ability name.  Don't even think legacy displays pet info anyways.
                 line_parts[5] = "nil"
@@ -173,8 +175,8 @@ def replace_instances(player_name, filename):
         lines[i] = handle_replacements(lines[i], mob_names_with_apostrophe)
 
         # handle pets
-        for pet_name in pet_names:
-            if pet_name in lines[i]:
+        for owner_name in owner_names:
+            if owner_name in lines[i]:
                 lines[i] = handle_replacements(lines[i], pet_replacements)
 
         # if line contains you/You
