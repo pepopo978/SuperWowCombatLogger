@@ -135,13 +135,25 @@ def replace_instances(player_name, filename):
     # collect pet names
     # 4/14 20:51:43.354  COMBATANT_INFO: 14.04.24 20:51:43&Hunter&HUNTER&Dwarf&2&PetName <- pet name
     pet_names = set()
-    for line in lines:
+    for i, line in enumerate(lines):
         if "COMBATANT_INFO" in line:
             try:
                 line_parts = line.split("&")
                 pet_name = line_parts[5]
                 if pet_name != "nil" and pet_name != "Razorgore the Untamed" and pet_name != "Deathknight Understudy":
                     pet_names.add(pet_name)
+
+                # remove turtle items that won't exist
+                for j, line_part in enumerate(line_parts):
+                    if ":" in line_part:
+                        item_parts = line_part.split(":")
+                        if len(item_parts) == 4:
+                            # definitely an item, remove any itemid > 25818 or enchantid > 3000 as they won't exist
+                            if int(item_parts[0]) > 25818 or int(item_parts[1]) >= 3000:
+                                line_parts[j] = "nil"
+
+                lines[i] = "&".join(line_parts)
+
             except Exception as e:
                 print(f"Error parsing pet name from line: {line}")
                 print(e)
