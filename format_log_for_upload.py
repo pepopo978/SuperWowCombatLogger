@@ -49,9 +49,10 @@ def replace_instances(player_name, filename):
         r"Your (.*?) hits you for": rf"{player_name}(selfdamage) 's \g<1> hits {player_name} for",  # handle self damage
 
         r" [Yy]our ": f" {player_name} 's ",
-        "You gain (.*?) from (.*?)'s": f"{player_name} gains \g<1> from \g<2> 's",
+        r"You gain (.*?) from (.*?)'s": rf"{player_name} gains \g<1> from \g<2> 's",
         # handle gains from other players spells
-        "You gain (.*?) from ": f"{player_name} gains \g<1> from {player_name} 's ",  # handle gains from your own spells
+        r"You gain (.*?) from ": rf"{player_name} gains \g<1> from {player_name} 's ",
+        # handle gains from your own spells
         "You gain": f"{player_name} gains",  # handle buff gains
         "You hit": f"{player_name} hits",
         "You crit": f"{player_name} crits",
@@ -135,13 +136,18 @@ def replace_instances(player_name, filename):
     # collect pet names
     # 4/14 20:51:43.354  COMBATANT_INFO: 14.04.24 20:51:43&Hunter&HUNTER&Dwarf&2&PetName <- pet name
     pet_names = set()
-    for i, line in enumerate(lines):
-        if "COMBATANT_INFO" in line:
+    for i, _ in enumerate(lines):
+        # DPSMate logs have " 's" already which will break some of our parsing, remove the space
+        lines[i] = lines[i].replace(" 's", "'s")
+        if "COMBATANT_INFO" in lines[i]:
             try:
-                line_parts = line.split("&")
+                line_parts = lines[i].split("&")
                 pet_name = line_parts[5]
                 if pet_name != "nil" and pet_name != "Razorgore the Untamed" and pet_name != "Deathknight Understudy":
                     pet_names.add(f"({pet_name})")
+                # remove pet name from uploaded combatant info, can cause player to not appear in logs if pet name
+                # is a player name or ability name.  Don't even think legacy displays pet info anyways.
+                line_parts[5] = "nil"
 
                 # remove turtle items that won't exist
                 for j, line_part in enumerate(line_parts):
@@ -155,7 +161,7 @@ def replace_instances(player_name, filename):
                 lines[i] = "&".join(line_parts)
 
             except Exception as e:
-                print(f"Error parsing pet name from line: {line}")
+                print(f"Error parsing pet name from line: {lines[i]}")
                 print(e)
 
     print(f"The follow pet hits/crits/misses/spells will be associated with their owner: {pet_names}")
@@ -195,9 +201,11 @@ def replace_instances(player_name, filename):
     with open(filename, 'w', encoding='utf-8') as file:
         file.writelines(lines)
 
+
 def create_zip_file(source_file, zip_filename):
     with zipfile.ZipFile(zip_filename, 'w') as zipf:
         zipf.write(source_file, arcname=os.path.basename(source_file))
+
 
 player_name = input("Enter player name: ")
 filename = input("Enter filename (defaults to WoWCombatLog.txt if left empty): ")
