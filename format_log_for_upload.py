@@ -141,7 +141,7 @@ def replace_instances(player_name, filename):
                 line_parts = line.split("&")
                 pet_name = line_parts[5]
                 if pet_name != "nil" and pet_name != "Razorgore the Untamed" and pet_name != "Deathknight Understudy":
-                    pet_names.add(pet_name)
+                    pet_names.add(f"({pet_name})")
 
                 # remove turtle items that won't exist
                 for j, line_part in enumerate(line_parts):
