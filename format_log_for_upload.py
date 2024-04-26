@@ -100,6 +100,7 @@ def replace_instances(player_name, filename):
     # Only the first match will be replaced
     renames = {
         r"'s Fireball\.": "'s Improved Fireball.",  # make fireball dot appear as a separate spell
+        r"'s Flamestrike\.": "'s Improved Flamestrike.",  # make flamestrike dot appear as a separate spell
         r"'s Pyroblast\.": "'s Pyroclast Barrage.",  # make Pyroblast dot appear as a separate spell
         r"'s Immolate\.": "'s Improved Immolate.",  # make Immolate dot appear as a separate spell
         r"'s Moonfire\.": "'s Improved Moonfire.",  # make Immolate dot appear as a separate spell
