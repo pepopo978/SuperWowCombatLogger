@@ -26,11 +26,12 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
 - Self damage is now separated as Playername(selfdamage)
 - The dot component of the following spells have been renamed to allow viewing casts of those spells independently from ticks:
     - Fireball Dot  -> Improved Fireball
+    - Flamestrike Dot  -> Improved Flamestrike
     - Pyroblast Dot -> Pyroclast Barrage
     - Immolate Dot  -> Improved Immolate
     - Moonfire Dot  -> Improved Moonfire
 - Shaman totem spells are edited to appear as though the shaman cast them so they get credit for the spell.
-- Pet autoattacks will now appear under "Pet Summoned" on their owners and their spells will appear under their owners.
+- Pet autoattacks will now appear under "Pet Summoned" on their owners and their spells will appear as though the owner cast them.
 - The following were renamed as their spells don't exist in legacy/monkey databases:
     - Burning Hatred -> Burning Flesh (Ornate bloodstone dagger proc)
     - Fire Rune -> Fire Storm (Flarecore 6 set proc)
