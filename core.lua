@@ -5,7 +5,6 @@ RPLL.CONSOLIDATE_CHARACTER = "{"
 RPLL.MESSAGE_PREFIX = "RPLL_HELPER_"
 
 RPLL.PlayerInformation = {}
-RPLL.Synchronizers = {}
 RPLL.LoggedCombatantInfo = {}
 
 RPLL:RegisterEvent("RAID_ROSTER_UPDATE")
@@ -170,18 +169,7 @@ RPLL.PET_STABLE_CLOSED = function()
 end
 
 RPLL.CHAT_MSG_LOOT = function(msg)
-	if not this:ContainsSynchronizer(msg) then
-		CombatLogAdd("LOOT: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
-	end
-end
-
-function RPLL:ContainsSynchronizer(msg)
-	for key, val in pairs(this.Synchronizers) do
-		if strfind(msg, key) ~= nil then
-			return true
-		end
-	end
-	return false
+	CombatLogAdd("LOOT: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
 end
 
 function RPLL:DeepSubString(str1, str2)
@@ -223,7 +211,7 @@ end
 
 function RPLL:grab_unit_information(unit)
 	local unit_name = UnitName(unit)
-	if UnitIsPlayer(unit) and unit_name ~= nil and unit_name ~= Unknown and not this:ContainsSynchronizer(unit_name) then
+	if UnitIsPlayer(unit) and unit_name ~= nil and unit_name ~= Unknown then
 		if this.PlayerInformation[unit_name] == nil then
 			this.PlayerInformation[unit_name] = {}
 		end

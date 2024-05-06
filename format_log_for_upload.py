@@ -126,6 +126,11 @@ def replace_instances(player_name, filename):
         r"([a-zA-Z' ]*?) 's (.*) ([a-zA-Z' ]*?) for": r"\g<1>(selfdamage) 's \g<2> \g<3> for",
     }
 
+    # add quantity 1 to loot messages without quantity
+    loot_replacements = {
+        r"\|h\|r\.$": "|h|rx1.",
+    }
+
     # create backup of original file
     backup_filename = filename.replace(".txt", "") + f".original.{int(time.time())}.txt"
     shutil.copyfile(filename, backup_filename)
@@ -134,7 +139,7 @@ def replace_instances(player_name, filename):
     with open(filename, 'r', encoding='utf-8') as file:
         lines = file.readlines()
 
-    # collect pet names
+    # collect pet names and change LOOT messages
     # 4/14 20:51:43.354  COMBATANT_INFO: 14.04.24 20:51:43&Hunter&HUNTER&Dwarf&2&PetName <- pet name
     pet_names = set()
     owner_names = set()
@@ -166,6 +171,8 @@ def replace_instances(player_name, filename):
             except Exception as e:
                 print(f"Error parsing pet name from line: {lines[i]}")
                 print(e)
+        elif "LOOT:" in lines[i]:
+            lines[i] = handle_replacements(lines[i], loot_replacements)
 
     print(f"The follow pet hits/crits/misses/spells will be associated with their owner: {pet_names}")
 
