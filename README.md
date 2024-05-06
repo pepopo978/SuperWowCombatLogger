@@ -1,7 +1,7 @@
 # Installation
 This requires https://github.com/balakethelock/SuperWoW to work.
 
-Remove `AdvancedVanillaCombatLog` directory from your addons folder if it existed.
+Remove `AdvancedVanillaCombatLog` and `AdvancedVanillaCombatLog_Helper` directories from your addons folder if they existed.
 
 Place `SuperWowCombatLogger` in Interface/Addons.
 
