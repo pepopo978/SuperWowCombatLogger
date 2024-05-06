@@ -46,3 +46,4 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
     - Curse of Shadow
     - Curse of Weakness
     - Curse of Tongues
+    - Expose Armor
