@@ -32,10 +32,10 @@ def replace_instances(player_name, filename):
     # Pet replacements have next priority
     # only the first match will be replaced
     pet_replacements = {
-        r"  ([a-zzA-Z]+) \(([a-zzA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
+        r"  ([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
         # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
-        r"  ([a-zzA-Z]+) \(([a-zzA-Z]+)\)'s": r"  \g<2>'s",  # pet ability
-        r"([a-zzA-Z]+) \(([a-zzA-Z]+)\)": r"\g<1>(\g<2>)",
+        r"  ([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\)'s": r"  \g<2>'s",  # pet ability
+        r"([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\)": r"\g<1>(\g<2>)",
         # other pet logs, need to remove space otherwise not parsed correctly
     }
 
@@ -44,9 +44,9 @@ def replace_instances(player_name, filename):
     you_replacements = {
         r'.*You fail to cast.*\n': '',
         r'.*You fail to perform.*\n': '',
-        r"You suffer (.*?) from your": rf"{player_name} suffers \g<1> from {player_name}(selfdamage) 's",
+        r"You suffer (.*?) from your": rf"{player_name} suffers \g<1> from {player_name} (self damage) 's",
         # handle self damage
-        r"Your (.*?) hits you for": rf"{player_name}(selfdamage) 's \g<1> hits {player_name} for",  # handle self damage
+        r"Your (.*?) hits you for": rf"{player_name} (self damage) 's \g<1> hits {player_name} for",  # handle self damage
 
         r" [Yy]our ": f" {player_name} 's ",
         r"You gain (.*?) from (.*?)'s": rf"{player_name} gains \g<1> from \g<2> 's",
@@ -122,8 +122,8 @@ def replace_instances(player_name, filename):
 
     # check for players hitting themselves
     self_damage = {
-        r"  ([a-zA-Z' ]*?) suffers (.*) damage from ([a-zA-Z' ]*?) 's": r"  \g<1> suffers \g<2> damage from \g<3>(selfdamage) 's",
-        r"([a-zA-Z' ]*?) 's (.*) ([a-zA-Z' ]*?) for": r"\g<1>(selfdamage) 's \g<2> \g<3> for",
+        r"  ([a-zA-Z' ]*?) suffers (.*) damage from ([a-zA-Z' ]*?) 's": r"  \g<1> suffers \g<2> damage from \g<3> (self damage) 's",
+        r"([a-zA-Z' ]*?) 's (.*) ([a-zA-Z' ]*?) for": r"\g<1> (self damage) 's \g<2> \g<3> for",
     }
 
     # add quantity 1 to loot messages without quantity
@@ -143,6 +143,9 @@ def replace_instances(player_name, filename):
     # 4/14 20:51:43.354  COMBATANT_INFO: 14.04.24 20:51:43&Hunter&HUNTER&Dwarf&2&PetName <- pet name
     pet_names = set()
     owner_names = set()
+    # associate common summoned pets with their owners as well
+    summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling"}
+    summoned_pet_owner_regex = r"([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\)"
     for i, _ in enumerate(lines):
         # DPSMate logs have " 's" already which will break some of our parsing, remove the space
         lines[i] = lines[i].replace(" 's", "'s")
@@ -173,6 +176,13 @@ def replace_instances(player_name, filename):
                 print(e)
         elif "LOOT:" in lines[i]:
             lines[i] = handle_replacements(lines[i], loot_replacements)
+        else:
+            for summoned_pet_name in summoned_pet_names:
+                if summoned_pet_name in lines[i]:
+                    match = re.search(summoned_pet_owner_regex, lines[i])
+                    if match:
+                        pet_names.add(summoned_pet_name)
+                        owner_names.add(match.group(2))
 
     print(f"The follow pet hits/crits/misses/spells will be associated with their owner: {pet_names}")
 
