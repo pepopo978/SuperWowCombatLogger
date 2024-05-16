@@ -89,15 +89,17 @@ local trackedSpells = {
 } --only tracking max rank
 
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
-	for key, value in pairs(trackedSpells) do
-		if key == spellID then
-			local targetName = UnitName(target) --get name from GUID
-			local casterName = UnitName(caster)
-			-- seems like on razorgore either caster or target can be null here
-			-- probably related to MC
-			CombatLogAdd(tostring(casterName) .. " casts " .. value .. " on " .. tostring(targetName) .. ".")
-		end
+	if not trackedSpells[spellID] then
+		return
 	end
+
+	local spellName = trackedSpells[spellID]
+	local targetName = UnitName(target) --get name from GUID
+	local casterName = UnitName(caster)
+
+	-- seems like on razorgore either caster or target can be null here
+	-- probably related to MC
+	CombatLogAdd(tostring(casterName) .. " casts " .. spellName .. " on " .. tostring(targetName) .. ".")
 end
 
 RPLL.ZONE_CHANGED_NEW_AREA = function()
