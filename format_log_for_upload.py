@@ -35,8 +35,6 @@ def replace_instances(player_name, filename):
         r"  ([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
         # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
         r"  ([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\)'s": r"  \g<2>'s",  # pet ability
-        r"([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\)": r"\g<1>(\g<2>)",
-        # other pet logs, need to remove space otherwise not parsed correctly
     }
 
     # You replacements have next priority
@@ -143,6 +141,9 @@ def replace_instances(player_name, filename):
     # 4/14 20:51:43.354  COMBATANT_INFO: 14.04.24 20:51:43&Hunter&HUNTER&Dwarf&2&PetName <- pet name
     pet_names = set()
     owner_names = set()
+
+    ignored_pet_names = {"Razorgore the Untamed", "Deathknight Understudy", "Naxxramas Worshipper"}
+
     # associate common summoned pets with their owners as well
     summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling"}
     summoned_pet_owner_regex = r"([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\)"
@@ -153,7 +154,7 @@ def replace_instances(player_name, filename):
             try:
                 line_parts = lines[i].split("&")
                 pet_name = line_parts[5]
-                if pet_name != "nil" and pet_name != "Razorgore the Untamed" and pet_name != "Deathknight Understudy":
+                if pet_name != "nil" and pet_name not in ignored_pet_names:
                     pet_names.add(f"{pet_name}")
                     owner_names.add(f"({line_parts[1]})")
                 # remove pet name from uploaded combatant info, can cause player to not appear in logs if pet name
@@ -182,9 +183,9 @@ def replace_instances(player_name, filename):
                     match = re.search(summoned_pet_owner_regex, lines[i])
                     if match:
                         pet_names.add(summoned_pet_name)
-                        owner_names.add(match.group(2))
+                        owner_names.add(f"({match.group(2)})")
 
-    print(f"The follow pet hits/crits/misses/spells will be associated with their owner: {pet_names}")
+    print(f"The following pet owners will have their pet hits/crits/misses/spells associated with them: {owner_names}")
 
     # Perform replacements
     # enumerate over lines to be able to modify the list in place
