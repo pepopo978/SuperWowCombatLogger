@@ -45,7 +45,8 @@ def replace_instances(player_name, filename):
         r"You suffer (.*?) from your": rf"{player_name} suffers \g<1> from {player_name} (self damage) 's",
         # handle self damage
         r"Your (.*?) hits you for": rf"{player_name} (self damage) 's \g<1> hits {player_name} for",  # handle self damage
-
+        # handle self parry, legacy expects 'was' instead of 'is'
+        r"Your (.*?) is parried by": rf"{player_name} 's \g<1> was parried by",
         r" [Yy]our ": f" {player_name} 's ",
         r"You gain (.*?) from (.*?)'s": rf"{player_name} gains \g<1> from \g<2> 's",
         # handle gains from other players spells
