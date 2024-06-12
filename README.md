@@ -40,6 +40,7 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
     - Pain Spike -> Intense Pain
     - Savage Bite -> Savage Fury 
     - Potent Venom -> Creeper Venom (lower kara trinket)
+    - Rejuvenation Cast -> Improved Rejuvenation (ticks are just Rejuvenation)
 - Tracks the caster and target for the following spells that were missing from combat log:
     - Faerie Fire
     - Sunder Armor

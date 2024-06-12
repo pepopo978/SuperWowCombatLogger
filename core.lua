@@ -85,7 +85,8 @@ local trackedSpells = {
 	[17937] = "Curse of Shadow",
 	[11708] = "Curse of Weakness",
 	[11719] = "Curse of Tongues",
-	[11198] = "Expose Armor"
+	[11198] = "Expose Armor",
+	[25299] = "Improved Rejuvenation"
 } --only tracking max rank
 
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
