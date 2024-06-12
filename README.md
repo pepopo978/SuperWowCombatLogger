@@ -41,7 +41,7 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
     - Savage Bite -> Savage Fury 
     - Potent Venom -> Creeper Venom (lower kara trinket)
     - Rejuvenation Cast -> Improved Rejuvenation (ticks are just Rejuvenation)
-- Tracks the caster and target for the following spells that were missing from combat log:
+- Tracks the caster and target for the following max level spells that were missing from the combat log:
     - Faerie Fire
     - Sunder Armor
     - Curse of the Elements
