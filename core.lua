@@ -87,7 +87,7 @@ local trackedSpells = {
 	[11719] = "Curse of Tongues",
 	[11198] = "Expose Armor",
 	[774] = "Improved Rejuvenation", --r1
-	[8070] = "Improved Rejuvenation", --r1 again??
+	[8070] = "Improved Rejuvenation", --r1 again?
 	[1058] = "Improved Rejuvenation", --r2
 	[1430] = "Improved Rejuvenation", --r3
 	[2090] = "Improved Rejuvenation", --r4
@@ -107,7 +107,17 @@ local trackedSpells = {
 	[9856] = "Improved Regrowth", --r7
 	[9857] = "Improved Regrowth", --r8
 	[9858] = "Improved Regrowth", --r9
-	
+	[139] = "Improved Renew", --r1
+	[6074] = "Improved Renew", --r2
+	[6075] = "Improved Renew", --r3
+	[6076] = "Improved Renew", --r4
+	[6077] = "Improved Renew", --r5
+	[6078] = "Improved Renew", --r6
+	[10927] = "Improved Renew", --r7
+	[10928] = "Improved Renew", --r8
+	[27606] = "Improved Renew", --r9
+	[10929] = "Improved Renew", --r9 again?
+	[25315] = "Improved Renew", --r10
 } --only tracking max rank
 
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
