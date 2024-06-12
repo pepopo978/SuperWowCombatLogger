@@ -40,7 +40,6 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
     - Pain Spike -> Intense Pain
     - Savage Bite -> Savage Fury 
     - Potent Venom -> Creeper Venom (lower kara trinket)
-    - Rejuvenation Cast -> Improved Rejuvenation (ticks are just Rejuvenation)
 - Tracks the caster and target for the following max level spells that were missing from the combat log:
     - Faerie Fire
     - Sunder Armor
@@ -50,3 +49,7 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
     - Curse of Weakness
     - Curse of Tongues
     - Expose Armor
+    - Heal over Time casts (ticks have the original spell name)
+        - Rejuvenation Cast -> Improved Rejuvenation
+        - Regrowth Cast -> Improved Regrowth
+        - Renew Cast -> Improved Renew
