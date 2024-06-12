@@ -110,6 +110,7 @@ def replace_instances(player_name, filename):
         " Spirit Link": " Spirit Bond",  # Shaman spell
         " Pain Spike": " Intense Pain",  # Spriest spell
         " Potent Venom": " Creeper Venom",  # lower kara trinket
+        " Savage Bite": " Savage Fury",  # custom druid ability
 
         # convert totem spells to appear as though the shaman cast them so that player gets credit
         r"  [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r"  \g<1> 's",
