@@ -85,8 +85,39 @@ local trackedSpells = {
 	[17937] = "Curse of Shadow",
 	[11708] = "Curse of Weakness",
 	[11719] = "Curse of Tongues",
-	[11198] = "Expose Armor"
-} --only tracking max rank
+	[11198] = "Expose Armor", --only tracking max rank for above spells
+	[774] = "Improved Rejuvenation", --r1
+	[1058] = "Improved Rejuvenation", --r2
+	[1430] = "Improved Rejuvenation", --r3
+	[2090] = "Improved Rejuvenation", --r4
+	[2091] = "Improved Rejuvenation", --r5
+	[3627] = "Improved Rejuvenation", --r6
+	[8910] = "Improved Rejuvenation", --r7
+	[9839] = "Improved Rejuvenation", --r8
+	[9840] = "Improved Rejuvenation", --r9
+	[9841] = "Improved Rejuvenation", --r10
+	[25299] = "Improved Rejuvenation", --r11
+	[8936] = "Improved Regrowth", --r1
+	[8938] = "Improved Regrowth", --r2
+	[8939] = "Improved Regrowth", --r3
+	[8940] = "Improved Regrowth", --r4
+	[8941] = "Improved Regrowth", --r5
+	[9750] = "Improved Regrowth", --r6
+	[9856] = "Improved Regrowth", --r7
+	[9857] = "Improved Regrowth", --r8
+	[9858] = "Improved Regrowth", --r9
+	[139] = "Improved Renew", --r1
+	[6074] = "Improved Renew", --r2
+	[6075] = "Improved Renew", --r3
+	[6076] = "Improved Renew", --r4
+	[6077] = "Improved Renew", --r5
+	[6078] = "Improved Renew", --r6
+	[10927] = "Improved Renew", --r7
+	[10928] = "Improved Renew", --r8
+	[27606] = "Improved Renew", --r9
+	[10929] = "Improved Renew", --r9 again?
+	[25315] = "Improved Renew", --r10
+} 
 
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 	if not trackedSpells[spellID] then
