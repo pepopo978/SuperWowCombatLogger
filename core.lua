@@ -85,7 +85,7 @@ local trackedSpells = {
 	[17937] = "Curse of Shadow",
 	[11708] = "Curse of Weakness",
 	[11719] = "Curse of Tongues",
-	[11198] = "Expose Armor",
+	[11198] = "Expose Armor", --only tracking max rank for above spells
 	[774] = "Improved Rejuvenation", --r1
 	[8070] = "Improved Rejuvenation", --r1 again?
 	[1058] = "Improved Rejuvenation", --r2
@@ -118,7 +118,7 @@ local trackedSpells = {
 	[27606] = "Improved Renew", --r9
 	[10929] = "Improved Renew", --r9 again?
 	[25315] = "Improved Renew", --r10
-} --only tracking max rank
+} 
 
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 	if not trackedSpells[spellID] then
