@@ -38,6 +38,7 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
     - Fire Rune -> Fire Storm (Flarecore 6 set proc)
     - Spirit Link -> Spirit Bond
     - Pain Spike -> Intense Pain
+    - Savage Bite -> Savage Fury 
     - Potent Venom -> Creeper Venom (lower kara trinket)
 - Tracks the caster and target for the following spells that were missing from combat log:
     - Faerie Fire
