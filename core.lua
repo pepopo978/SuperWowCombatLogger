@@ -124,6 +124,9 @@ RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 	if not trackedSpells[spellID] then
 		return
 	end
+	if event ~= "CAST" then --we do not want cast starts, only finished ones
+		return
+	end
 
 	local spellName = trackedSpells[spellID]
 	local targetName = UnitName(target) --get name from GUID
