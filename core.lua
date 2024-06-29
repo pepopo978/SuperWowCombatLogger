@@ -87,7 +87,6 @@ local trackedSpells = {
 	[11719] = "Curse of Tongues",
 	[11198] = "Expose Armor", --only tracking max rank for above spells
 	[774] = "Improved Rejuvenation", --r1
-	[8070] = "Improved Rejuvenation", --r1 again?
 	[1058] = "Improved Rejuvenation", --r2
 	[1430] = "Improved Rejuvenation", --r3
 	[2090] = "Improved Rejuvenation", --r4
