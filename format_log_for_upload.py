@@ -27,6 +27,7 @@ def replace_instances(player_name, filename):
     mob_names_with_apostrophe = {
         "Onyxia's Elite Guard": "Onyxias Elite Guard",
         "Sartura's Royal Guard": "Sarturas Royal Guard",
+        "Medivh's Merlot Blue Label": "Medivhs Merlot Blue Label",
     }
 
     # Pet replacements have next priority
@@ -44,9 +45,12 @@ def replace_instances(player_name, filename):
         r'.*You fail to perform.*\n': '',
         r"You suffer (.*?) from your": rf"{player_name} suffers \g<1> from {player_name} (self damage) 's",
         # handle self damage
-        r"Your (.*?) hits you for": rf"{player_name} (self damage) 's \g<1> hits {player_name} for",  # handle self damage
+        r"Your (.*?) hits you for": rf"{player_name} (self damage) 's \g<1> hits {player_name} for",
+        # handle self damage
         # handle self parry, legacy expects 'was' instead of 'is'
         r"Your (.*?) is parried by": rf"{player_name} 's \g<1> was parried by",
+        r"Your (.*?) failed": rf"{player_name} 's \g<1> fails",
+        r" failed. You are immune": rf" fails. {player_name} is immune",
         r" [Yy]our ": f" {player_name} 's ",
         r"You gain (.*?) from (.*?)'s": rf"{player_name} gains \g<1> from \g<2> 's",
         # handle gains from other players spells
@@ -61,7 +65,6 @@ def replace_instances(player_name, filename):
         "You die": f"{player_name} dies",
         "You cast": f"{player_name} casts",
         "You create": f"{player_name} creates",
-        "You have slain": f"{player_name} has slain",
         "You perform": f"{player_name} performs",
         "You interrupt": f"{player_name} interrupts",
         "You miss": f"{player_name} misses",
@@ -78,6 +81,7 @@ def replace_instances(player_name, filename):
         "heals you": f"heals {player_name}",
         "hits you for": f"hits {player_name} for",
         "crits you for": f"crits {player_name} for",
+        r"You have slain (.*?)!": f"\g<1> is slain by {player_name}.",
         r"(\S)\syou\.": rf"\g<1> {player_name}.",  # non whitespace character followed by whitespace followed by you
         "You fall and lose": f"{player_name} falls and loses",
     }
@@ -92,6 +96,7 @@ def replace_instances(player_name, filename):
         # handle 's at beginning of line by looking for [double space] [playername] [Capital letter]
         r"  ([a-zA-Z' ]*?\S)'s ([A-Z])": r"  \g<1> 's \g<2>",
         r"from ([a-zA-Z' ]*?\S)'s ([A-Z])": r"from \g<1> 's \g<2>",  # handle 's in middle of line by looking for 'from'
+        r"is immune to ([a-zA-Z' ]*?\S)'s ([A-Z])": r"is immune to \g<1> 's \g<2>",  # handle 's in middle of line by looking for 'is immune to'
         r"\)'s ([A-Z])": r") 's \g<1>",  # handle 's for pets
     }
 
