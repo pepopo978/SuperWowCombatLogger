@@ -81,7 +81,7 @@ def replace_instances(player_name, filename):
         "heals you": f"heals {player_name}",
         "hits you for": f"hits {player_name} for",
         "crits you for": f"crits {player_name} for",
-        r"You have slain (.*?)!": f"\g<1> is slain by {player_name}.",
+        r"You have slain (.*?)!": rf"\g<1> is slain by {player_name}.",
         r"(\S)\syou\.": rf"\g<1> {player_name}.",  # non whitespace character followed by whitespace followed by you
         "You fall and lose": f"{player_name} falls and loses",
     }
