@@ -128,7 +128,7 @@ def replace_instances(player_name, filename):
     # check for players hitting themselves
     self_damage = {
         r"  ([a-zA-Z' ]*?) suffers (.*) damage from ([a-zA-Z' ]*?) 's": r"  \g<1> suffers \g<2> damage from \g<3> (self damage) 's",
-        r"([a-zA-Z' ]*?) 's (.*) ([a-zA-Z' ]*?) for": r"\g<1> (self damage) 's \g<2> \g<3> for",
+        r"  ([a-zA-Z' ]*?) 's (.*) ([a-zA-Z' ]*?) for": r"  \g<1> (self damage) 's \g<2> \g<3> for",
     }
 
     # add quantity 1 to loot messages without quantity
