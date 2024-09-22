@@ -127,8 +127,8 @@ def replace_instances(player_name, filename):
 
     # check for players hitting themselves
     self_damage = {
-        r"  ([a-zA-Z' ]*?) suffers (.*) damage from ([a-zA-Z' ]*?) 's": r"  \g<1> suffers \g<2> damage from \g<3> (self damage) 's",
-        r"  ([a-zA-Z' ]*?) 's (.*) ([a-zA-Z' ]*?) for": r"  \g<1> (self damage) 's \g<2> \g<3> for",
+        r"  ([a-zA-Z' ]*?) suffers (.*) (damage) from ([a-zA-Z' ]*?) 's": r"  \g<1> suffers \g<2> damage from \g<4> (self damage) 's",
+        r"  ([a-zA-Z' ]*?) 's (.*) (hits|crits) ([a-zA-Z' ]*?) for": r"  \g<1> (self damage) 's \g<2> \g<3> \g<4> for",
     }
 
     # add quantity 1 to loot messages without quantity
@@ -220,8 +220,8 @@ def replace_instances(player_name, filename):
         # self damage
         for pattern, replacement in self_damage.items():
             match = re.search(pattern, lines[i])
-            # check that group 1 and 3 are equal meaning the player is hitting themselves
-            if match and match.group(1) == match.group(3):
+            # check that group 1 and 4 are equal meaning the player is hitting themselves
+            if match and match.group(1).strip() == match.group(4).strip():
                 lines[i] = handle_replacements(lines[i], {pattern: replacement})
                 break
 
