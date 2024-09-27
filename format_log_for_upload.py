@@ -231,7 +231,7 @@ def replace_instances(player_name, filename):
 
 
 def create_zip_file(source_file, zip_filename):
-    with zipfile.ZipFile(zip_filename, 'w') as zipf:
+    with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
         zipf.write(source_file, arcname=os.path.basename(source_file))
 
 
