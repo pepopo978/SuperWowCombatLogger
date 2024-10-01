@@ -207,7 +207,7 @@ def replace_instances(player_name, filename):
                 lines[i] = handle_replacements(lines[i], pet_replacements)
 
         # if line contains you/You
-        if "you" in lines[i] or "You" in lines[i]:
+        if "you" in lines[i] or "You" in lines[i] or "dodged." in lines[i]:
             lines[i] = handle_replacements(lines[i], you_replacements)
             lines[i] = handle_replacements(lines[i],
                                            you_replacements)  # when casting ability on yourself need to do two replacements
