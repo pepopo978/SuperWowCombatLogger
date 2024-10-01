@@ -77,6 +77,7 @@ def replace_instances(player_name, filename):
         "You reflect": f"{player_name} reflects",
         "You receive": f"{player_name} receives",
         "You deflect": f"{player_name} deflects",
+        r"was dodged\.": f"was dodged by {player_name}.",  # SPELLDODGEDOTHERSELF=%s's %s was dodged.  No 'You'
         "causes you": f"causes {player_name}",
         "heals you": f"heals {player_name}",
         "hits you for": f"hits {player_name} for",
