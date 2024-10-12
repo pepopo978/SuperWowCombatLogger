@@ -80,12 +80,51 @@ local trackedSpells = {
 	[9907] = "Faerie Fire",
 	[17392] = "Faerie Fire (Feral)",
 	[11597] = "Sunder Armor",
-	[11722] = "Curse of the Elements",
+
+	[11722] = "Curse of the Elements", -- lock
 	[11717] = "Curse of Recklessness",
 	[17937] = "Curse of Shadow",
 	[11708] = "Curse of Weakness",
 	[11719] = "Curse of Tongues",
-	[11198] = "Expose Armor", --only tracking max rank for above spells
+
+	[1038] = "Blessing of Salvation", -- pally
+	[10278] = "Blessing of Protection",
+	[20217] = "Blessing of Kings",
+	[19979] = "Blessing of Light",
+	[20914] = "Blessing of Sanctuary",
+	[20729] = "Blessing of Sacrifice",
+	[25291] = "Blessing of Might",
+	[25290] = "Blessing of Wisdom",
+	[25895] = "Greater Blessing of Salvation",
+	[25898] = "Greater Blessing of Kings",
+	[25890] = "Greater Blessing of Light",
+	[25916] = "Greater Blessing of Might",
+	[25918] = "Greater Blessing of Wisdom",
+	[25899] = "Greater Blessing of Sanctuary",
+	[45801] = "Greater Blessing of Sacrifice",
+
+	[10060] = "Power Infusion", -- priest
+	[10938] = "Power Word: Fortitude",
+	[23948] = "Power Word: Fortitude",
+	[10901] = "Power Word: Shield",
+	[27607] = "Power Word: Shield",
+	[23948] = "Power Word: Fortitude",
+	[21564] = "Prayer of Fortitude",
+	[45551] = "Prayer of Spirit",
+
+	[10157] = "Arcane Intellect", -- mage
+	[23028] = "Arcane Brilliance",
+
+	[45511] = "Bloodlust", --shaman
+
+	[16878] = "Mark of the Wild", --druid
+	[24752] = "Mark of the Wild",
+	[21850] = "Gift of the Wild",
+	[57108] = "Emerald Blessing",
+
+	[11198] = "Expose Armor",
+	--only tracking max rank for above spells
+
 	[774] = "Improved Rejuvenation", --r1
 	[1058] = "Improved Rejuvenation", --r2
 	[1430] = "Improved Rejuvenation", --r3
@@ -117,13 +156,14 @@ local trackedSpells = {
 	[27606] = "Improved Renew", --r9
 	[10929] = "Improved Renew", --r9 again?
 	[25315] = "Improved Renew", --r10
-} 
+}
 
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 	if not trackedSpells[spellID] then
 		return
 	end
-	if event ~= "CAST" then --we do not want cast starts, only finished ones
+	if event ~= "CAST" then
+		--we do not want cast starts, only finished ones
 		return
 	end
 
