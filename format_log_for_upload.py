@@ -110,14 +110,6 @@ def replace_instances(player_name, filename):
         r"'s Immolate\.": "'s Improved Immolate.",  # make Immolate dot appear as a separate spell
         r"'s Moonfire\.": "'s Improved Moonfire.",  # make Immolate dot appear as a separate spell
 
-        " Burning Hatred": " Burning Flesh",
-        # Burning Hatred custom twow spell not in logging database so it doesn't show up
-        " Fire Rune": " Fire Storm",  # Fire rune is proc from flarecore 6 set
-        " Spirit Link": " Spirit Bond",  # Shaman spell
-        " Pain Spike": " Intense Pain",  # Spriest spell
-        " Potent Venom": " Creeper Venom",  # lower kara trinket
-        " Savage Bite": " Savage Fury",  # custom druid ability
-
         # convert totem spells to appear as though the shaman cast them so that player gets credit
         r"  [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r"  \g<1> 's",
         r" from [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r" from \g<1> 's",
