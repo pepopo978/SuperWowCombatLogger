@@ -104,11 +104,13 @@ def replace_instances(player_name, filename):
     # Renames occur last
     # Only the first match will be replaced
     renames = {
-        r"'s Fireball\.": "'s Improved Fireball.",  # make fireball dot appear as a separate spell
-        r"'s Flamestrike\.": "'s Improved Flamestrike.",  # make flamestrike dot appear as a separate spell
+        r"'s Fireball\.": "'s Improved Fireball.",  # make Fireball dot appear as a separate spell
+        r"'s Flamestrike\.": "'s Improved Flamestrike.",  # make Flamestrike dot appear as a separate spell
         r"'s Pyroblast\.": "'s Pyroclast Barrage.",  # make Pyroblast dot appear as a separate spell
         r"'s Immolate\.": "'s Improved Immolate.",  # make Immolate dot appear as a separate spell
-        r"'s Moonfire\.": "'s Improved Moonfire.",  # make Immolate dot appear as a separate spell
+        r"'s Moonfire\.": "'s Improved Moonfire.",  # make Moonfire dot appear as a separate spell
+        r"'s Holy Fire\.": "'s Cleansing Flames.",  # make Holy Fire dot appear as a separate spell
+        r"'s Flame Shock\.": "'s Improved Flame Shock.",  # make Flame Shock dot appear as a separate spell
 
         # convert totem spells to appear as though the shaman cast them so that player gets credit
         r"  [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r"  \g<1> 's",

@@ -24,12 +24,14 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
     AURAADDEDSELFHELPFUL = "You gain %s (1)."
 ```
 - Self damage is now separated as Playername (self damage)
-- The dot component of the following spells have been renamed to allow viewing casts of those spells independently from ticks:
+- The dot component of the following spells have been renamed to allow viewing casts of those spells independently of ticks:
     - Fireball Dot  -> Improved Fireball
     - Flamestrike Dot  -> Improved Flamestrike
     - Pyroblast Dot -> Pyroclast Barrage
     - Immolate Dot  -> Improved Immolate
     - Moonfire Dot  -> Improved Moonfire
+    - Holy Fire Dot  -> Cleansing Flames
+    - Flame Shock Dot  -> Improved Flame Shock
 - Shaman totem spells are edited to appear as though the shaman cast them so they get credit for the spell.
 - Pet autoattacks will now appear under "Pet Summoned" on their owners and their spells will appear as though the owner cast them.
 - Greater Feral Spirit, Battle Chicken, Arcanite Dragonling are similarly edited to associate with their owners.
