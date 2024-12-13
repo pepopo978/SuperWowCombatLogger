@@ -30,6 +30,7 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
     - Pyroblast Dot -> Pyroclast Barrage
     - Immolate Dot  -> Improved Immolate
     - Moonfire Dot  -> Improved Moonfire
+    - Insect Swarm Dot  -> Locust Swarm
     - Holy Fire Dot  -> Cleansing Flames
     - Flame Shock Dot  -> Improved Flame Shock
 - Shaman totem spells are edited to appear as though the shaman cast them so they get credit for the spell.

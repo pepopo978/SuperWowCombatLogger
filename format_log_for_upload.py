@@ -108,7 +108,10 @@ def replace_instances(player_name, filename):
         r"'s Flamestrike\.": "'s Improved Flamestrike.",  # make Flamestrike dot appear as a separate spell
         r"'s Pyroblast\.": "'s Pyroclast Barrage.",  # make Pyroblast dot appear as a separate spell
         r"'s Immolate\.": "'s Improved Immolate.",  # make Immolate dot appear as a separate spell
+        r"'s Corruption\.": "'s Improved Corruption.",  # make Corruption dot appear as a separate spell
+        r"'s Curse of Agony\.": "'s Improved Curse of Agony.",  # make Curse of Agony dot appear as a separate spell
         r"'s Moonfire\.": "'s Improved Moonfire.",  # make Moonfire dot appear as a separate spell
+        r"'s Insect Swarm\.": "'s Locust Swarm.",  # make Insect Swarm dot appear as a separate spell
         r"'s Holy Fire\.": "'s Cleansing Flames.",  # make Holy Fire dot appear as a separate spell
         r"'s Flame Shock\.": "'s Improved Flame Shock.",  # make Flame Shock dot appear as a separate spell
 
@@ -159,9 +162,10 @@ def replace_instances(player_name, filename):
                 if pet_name != "nil" and pet_name not in ignored_pet_names:
                     pet_names.add(f"{pet_name}")
                     owner_names.add(f"({line_parts[1]})")
-                # remove pet name from uploaded combatant info, can cause player to not appear in logs if pet name
-                # is a player name or ability name.  Don't even think legacy displays pet info anyways.
-                line_parts[5] = "nil"
+                else:
+                    # remove pet name from uploaded combatant info, can cause player to not appear in logs if pet name
+                    # is a player name or ability name.  Don't even think legacy displays pet info anyways.
+                    line_parts[5] = "nil"
 
                 # remove turtle items that won't exist
                 for j, line_part in enumerate(line_parts):

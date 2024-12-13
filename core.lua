@@ -86,6 +86,8 @@ local trackedSpells = {
 	[17937] = "Curse of Shadow",
 	[11708] = "Curse of Weakness",
 	[11719] = "Curse of Tongues",
+	[25311] = "Corruption",
+	[11713] = "Curse of Agony",
 
 	[1038] = "Blessing of Salvation", -- pally
 	[10278] = "Blessing of Protection",
@@ -121,6 +123,7 @@ local trackedSpells = {
 	[24752] = "Mark of the Wild",
 	[21850] = "Gift of the Wild",
 	[57108] = "Emerald Blessing",
+	[24977] = "Insect Swarm",
 
 	[11198] = "Expose Armor",
 	--only tracking max rank for above spells
