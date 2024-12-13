@@ -6,11 +6,11 @@ Remove `AdvancedVanillaCombatLog` and `AdvancedVanillaCombatLog_Helper` director
 Place `SuperWowCombatLogger` in Interface/Addons.
 
 # Preparing for upload
-In order to upload your logs to monkeylogs/legacy logs you need to run `format_log_for_upload.py` on your WowCombatLog.txt.  
+In order to upload your logs to monkeylogs/turtlogs you need to run `format_log_for_upload.py` on your WowCombatLog.txt.  
 
 Copy this python file to the same directory as your WowCombatLog.txt and run `python format_log_for_upload.py`.  
 
-Fill in your player name and the name of your log file when prompted, then zip the new WowCombatLog.txt and upload it to monkey/legacy logs.
+Fill in your player name and the name of your log file when prompted, then zip the new WowCombatLog.txt and upload it to monkey/turtlogs.
 
 # Changes from AdvancedVanillaCombatLog
 - No longer requires any raiders to run the AdvancedVanillaCombatLog_Helper addon.
