@@ -30,12 +30,15 @@ def replace_instances(player_name, filename):
         "Medivh's Merlot Blue Label": "Medivhs Merlot Blue Label",
     }
 
+    # Pet renames have next priority
+    pet_rename_replacements = {}
+
     # Pet replacements have next priority
     # only the first match will be replaced
     pet_replacements = {
-        r"  ([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
+        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
         # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
-        r"  ([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\)'s": r"  \g<2>'s",  # pet ability
+        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)'s": r"  \g<2>'s",  # pet ability
     }
 
     # You replacements have next priority
@@ -97,7 +100,8 @@ def replace_instances(player_name, filename):
         # handle 's at beginning of line by looking for [double space] [playername] [Capital letter]
         r"  ([a-zA-Z' ]*?\S)'s ([A-Z])": r"  \g<1> 's \g<2>",
         r"from ([a-zA-Z' ]*?\S)'s ([A-Z])": r"from \g<1> 's \g<2>",  # handle 's in middle of line by looking for 'from'
-        r"is immune to ([a-zA-Z' ]*?\S)'s ([A-Z])": r"is immune to \g<1> 's \g<2>",  # handle 's in middle of line by looking for 'is immune to'
+        r"is immune to ([a-zA-Z' ]*?\S)'s ([A-Z])": r"is immune to \g<1> 's \g<2>",
+        # handle 's in middle of line by looking for 'is immune to'
         r"\)'s ([A-Z])": r") 's \g<1>",  # handle 's for pets
     }
 
@@ -144,6 +148,7 @@ def replace_instances(player_name, filename):
 
     # collect pet names and change LOOT messages
     # 4/14 20:51:43.354  COMBATANT_INFO: 14.04.24 20:51:43&Hunter&HUNTER&Dwarf&2&PetName <- pet name
+    pet_renames = set()  # rename pets that have the same name their owner
     pet_names = set()
     owner_names = set()
 
@@ -151,7 +156,8 @@ def replace_instances(player_name, filename):
 
     # associate common summoned pets with their owners as well
     summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling"}
-    summoned_pet_owner_regex = r"([a-zzA-Z][ a-zzA-Z]+[a-zzA-Z]) \(([a-zzA-Z]+)\)"
+    summoned_pet_owner_regex = r"([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)"
+
     for i, _ in enumerate(lines):
         # DPSMate logs have " 's" already which will break some of our parsing, remove the space
         lines[i] = lines[i].replace(" 's", "'s")
@@ -160,6 +166,14 @@ def replace_instances(player_name, filename):
                 line_parts = lines[i].split("&")
                 pet_name = line_parts[5]
                 if pet_name != "nil" and pet_name not in ignored_pet_names:
+                    owner_name = line_parts[1]
+                    # rename pets that have the same name as their owner
+                    if pet_name == owner_name:
+                        pet_renames.add(pet_name)
+                        pet_rename_replacements[rf"{pet_name} \({owner_name}\)"] = f"{pet_name}Pet ({owner_name})"
+
+                        line_parts[5] = f"{pet_name}Pet"
+
                     pet_names.add(f"{pet_name}")
                     owner_names.add(f"({line_parts[1]})")
                 else:
@@ -192,12 +206,18 @@ def replace_instances(player_name, filename):
                         owner_names.add(f"({match.group(2)})")
 
     print(f"The following pet owners will have their pet hits/crits/misses/spells associated with them: {owner_names}")
+    if pet_renames:
+        print(f"The following pets will be renamed to avoid having the same name as their owner: {pet_renames}")
 
     # Perform replacements
     # enumerate over lines to be able to modify the list in place
     for i, _ in enumerate(lines):
         # mob names with apostrophe
         lines[i] = handle_replacements(lines[i], mob_names_with_apostrophe)
+
+        # handle pet renames
+        if pet_rename_replacements:
+            lines[i] = handle_replacements(lines[i], pet_rename_replacements)
 
         # handle pets
         for owner_name in owner_names:
@@ -230,8 +250,9 @@ def replace_instances(player_name, filename):
 
 
 def create_zip_file(source_file, zip_filename):
-    with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        zipf.write(source_file, arcname=os.path.basename(source_file))
+    with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:        zipf.write(source_file,
+                                                                                             arcname=os.path.basename(
+                                                                                                 source_file))
 
 
 player_name = input("Enter player name: ")
