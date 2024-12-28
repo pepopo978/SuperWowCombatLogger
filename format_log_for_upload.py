@@ -36,9 +36,10 @@ def replace_instances(player_name, filename):
     # Pet replacements have next priority
     # only the first match will be replaced
     pet_replacements = {
-        r"([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) (hits|crits|misses)": r"\g<2>'s Pet Summoned \g<3>",
+        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
         # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
-        r"([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)'s": r"\g<2>'s",  # pet ability
+        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)": r"  \g<2>",  # pet ability
+        r"from ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)'s": r"from \g<2>'s",  # pet ability
     }
 
     # You replacements have next priority
