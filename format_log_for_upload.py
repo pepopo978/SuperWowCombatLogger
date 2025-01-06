@@ -128,6 +128,11 @@ def replace_instances(player_name, filename):
         "Sarturas Royal Guard": "Sartura's Royal Guard",
     }
 
+    friendly_fire = {
+        r"from ([a-zA-Z]*?) 's Power Overwhelming": r"from \g<1> (self damage) 's Power Overwhelming",
+        # power overwhelming causes owner to damage pet, shouldn't count as dps
+    }
+
     # check for players hitting themselves
     self_damage = {
         r"  ([a-zA-Z' ]*?) suffers (.*) (damage) from ([a-zA-Z' ]*?) 's": r"  \g<1> suffers \g<2> damage from \g<4> (self damage) 's",
@@ -236,6 +241,13 @@ def replace_instances(player_name, filename):
 
         # renames
         lines[i] = handle_replacements(lines[i], renames)
+
+        # self damage exceptions
+        for pattern, replacement in friendly_fire.items():
+            match = re.search(pattern, lines[i])
+            if match:
+                lines[i] = handle_replacements(lines[i], {pattern: replacement})
+                break
 
         # self damage
         for pattern, replacement in self_damage.items():
