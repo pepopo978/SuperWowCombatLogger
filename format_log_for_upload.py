@@ -228,6 +228,10 @@ def replace_instances(player_name, filename):
         # handle pets
         for owner_name in owner_names:
             if owner_name in lines[i]:
+                # ignore pet dying
+                if "dies." in lines[i] or "is killed by" in lines[i]:
+                    continue
+
                 lines[i] = handle_replacements(lines[i], pet_replacements)
 
         # if line contains you/You
