@@ -37,6 +37,7 @@ def replace_instances(player_name, filename):
     # only the first match will be replaced
     pet_replacements = {
         r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
+        r"  Your ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) is dismissed.": r"  \g<2>'s \g<1> (\g<2>) is dismissed.",
         # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
         r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)": r"  \g<2>",  # pet ability
         r"from ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)'s": r"from \g<2>'s",  # pet ability
