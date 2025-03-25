@@ -1,3 +1,18 @@
+if not SetAutoloot then
+
+  StaticPopupDialogs["NO_SUPERWOW_RPLL"] = {
+    text = "|cffffff00SuperWowCombatLogger|r requires SuperWoW to operate.",
+    button1 = TEXT(OKAY),
+    timeout = 0,
+    whileDead = 1,
+    hideOnEscape = 1,
+		showAlert = 1,
+  }
+
+  StaticPopup_Show("NO_SUPERWOW_RPLL")
+  return
+end
+
 local RPLL = RPLL
 RPLL.VERSION = 14
 RPLL.MAX_MESSAGE_LENGTH = 500
@@ -20,6 +35,7 @@ RPLL:RegisterEvent("PLAYER_PET_CHANGED")
 RPLL:RegisterEvent("PET_STABLE_CLOSED")
 
 RPLL:RegisterEvent("CHAT_MSG_LOOT")
+RPLL:RegisterEvent("CHAT_MSG_SYSTEM")
 
 RPLL:RegisterEvent("UNIT_INVENTORY_CHANGED")
 
@@ -72,11 +88,32 @@ local function strsplit(pString, pPattern)
 	return Table
 end
 
+-- won't this fire too much?
 RPLL.UNIT_INVENTORY_CHANGED = function(unit)
 	this:grab_unit_information(unit)
 end
 
 local trackedSpells = {
+	[9907] = "Faerie Fire",
+	[17392] = "Faerie Fire (Feral)",
+	[11597] = "Sunder Armor",
+	[11722] = "Curse of the Elements",
+	[11717] = "Curse of Recklessness",
+	[17937] = "Curse of Shadow",
+	[11708] = "Curse of Weakness",
+	[20572] = "Blood Fury",
+	[45511] = "Bloodlust",
+	[29602] = "Jom Gabbar",
+	[28200] = "Ascendance",
+	[24658] = "Unstable Power",
+	[11129] = "Combustion",
+	[20549] = "War Stomp",
+	[1044]  = "Blessing of Freedom",
+	[1022]  = "Blessing of Protection", -- rank 1
+	[5599]  = "Blessing of Protection", -- rank 2
+	[10278] = "Blessing of Protection", -- rank 3
+	[6940]  = "Blessing of Sacrifice", -- rank 1
+	[20729] = "Blessing of Sacrifice", -- rank 2
 	[9907] = "Faerie Fire",
 	[17392] = "Faerie Fire (Feral)",
 	[11597] = "Sunder Armor",
@@ -159,24 +196,208 @@ local trackedSpells = {
 	[27606] = "Improved Renew", --r9
 	[10929] = "Improved Renew", --r9 again?
 	[25315] = "Improved Renew", --r10
+} --only tracking max rank
+local trackedConsumes = {
+	-- elixirs:
+	[11390] = "Arcane Elixir",
+	[17539] = "Greater Arcane Elixir",
+	[7844]  = "Elixir of Firepower",
+	[26276] = "Elixir of Greater Firepower",
+	[11474] = "Elixir of Shadow Power",
+	[45988] = "Elixir of Greater Nature Power",
+	[21920] = "Elixir of Frost Power",
+	[45427] = "Dreamshard Elixir",
+	[45489] = "Dreamtonic",
+	[24363] = "Mageblood Potion",
+
+	[11328] = "Elixir of Agility",
+	[11334] = "Elixir of Greater Agility",
+	[17538] = "Elixir of the Mongoose",
+	[11405] = "Elixir of Giants",
+	[17535] = "Elixir of the Sages", -- laugh
+	[17537] = "Elixir of Brute Force", -- laugh
+	[11349] = "Elixir of Greater Defense", -- laugh
+	[11348] = "Elixir of Superior Defense",
+	[24361] = "Major Troll's Blood Potion", -- laugh
+
+	[3593]  = "Elixir of Fortitude",
+	[17038] = "Winterfall Firewater",
+	[11371] = "Gift of Arthas",
+
+	-- food:
+	[18194] = "Nightfin Soup",
+	-- [24800] = "Smoked Desert Dumplings", -- same  as power mush
+	[18124] = "Blessed Sunfruit",
+	[18140] = "Blessed Sunfruit Juice",
+	[18230] = "Grilled Squid",
+
+	[57043] = "Danonzo's Tel'Abim Delight",
+	[57045] = "Danonzo's Tel'Abim Medley",
+	[57055] = "Danonzo's Tel'Abim Surprise",
+
+	[24800] = "Power Mushroom",
+	[25660] = "Hardened Mushroom",
+	-- [25660] = "Dirge's Kickin' Chimaerok Chops", -- same as hardened mush
+	[45624] = "Le Fishe Au Chocolat",
+	[46084] = "Gurubashi Gumbo",
+	-- drinks
+	[22789] = "Gordok Green Grog",
+	[20875] = "Rumsey Rum",
+	[25804] = "Rumsey Rum Black Label",
+	[57106] = "Medivh's Merlot",
+	[57107] = "Medivh's Merlot Blue Label",
+	[22790] = "Kreeg's Stout Beatdown",
+
+	-- flasks
+	[17626] = "Flask of the Titans",
+	[17627] = "Flask of Distilled Wisdom",
+	[17628] = "Flask of Supreme Power",
+	[17629] = "Flask of Chromatic Resistance",
+	-- zanzas
+	[24382] = "Spirit of Zanza",
+	[24383] = "Swiftness of Zanza",
+	[24417] = "Sheen of Zanza",
+	-- blasted
+	[10692] = "Cerebral Cortex Compound",
+	[10667] = "R.O.I.D.S.",
+	[10668] = "Lung Juice Cocktail",
+	[10669] = "Ground Scorpok Assay",
+	[10693] = "Gizzard Gum",
+	-- potions
+	[3169]  = "Limited Invulnerability Potion",
+	[3680]  = "Lesser Invisibility Potion",
+	[11392] = "Invisibility Potion",
+	[45425] = "Potion of Quickness",
+	[16589] = "Noggenfogger Elixir",
+	[6615]  = "Free Action Potion",
+	[24364] = "Living Action Potion",
+	[4941]  = "Lesser Stoneshield Potion",
+	[17540] = "Greater Stoneshield Potion",
+	[8212]  = "Elixir of Giant Growth",
+	[6613]  = "Great Rage Potion",
+	[17528] = "Mighty Rage Potion",
+	[2379]  = "Swiftness Potion",
+	-- restoratives
+	[9512]  = "Thistle Tea",
+	[17534] = "Major Healing Potion",
+	[17531] = "Major Mana Potion",
+	[22729] = "Major Rejuvenation Potion",
+	[19199] = "Tea With Sugar",
+	[16666] = "Demonic Rune",
+	[27869] = "Dark Rune",
+	[10850] = "Powerful Smelling Salts",
+	-- bandages
+	[18610] = "Heavy Runecloth Bandage",
+	[18608] = "Runecloth Bandage",
+	-- scrolls
+	[12178] = "Scroll of Stamina IV",
+	[12179] = "Scroll of Strength IV",
+	[12174] = "Scroll of Agility IV",
+	[12176] = "Scroll of Intellect IV",
+	[12177] = "Scroll of Spirit IV",
+	[12175] = "Scroll of Protection IV",
+	-- protections
+	[7233]  = "Fire Protection Potion",
+	[17543] = "Greater Fire Protection Potion",
+	[7239]  = "Frost Protection Potion",
+	[17544] = "Greater Frost Protection Potion",
+	[7254]  = "Nature Protection Potion",
+	[17546] = "Greater Nature Protection Potion",
+	[7242]  = "Shadow Protection Potion",
+	[17548] = "Greater Shadow Protection Potion",
+	[7245]  = "Holy Protection Potion",
+	[17545] = "Greater Holy Protection Potion",
+	[17549] = "Greater Arcane Protection Potion",
+	-- cleanse
+	[26677] = "Elixir of Poison Resistance",
+	[7932]  = "Anti-Venom",
+	[7933]  = "Strong Anti-Venom",
+	[23786] = "Powerful Anti-Vendom",
+	[3592]  = "Jungle Remedy",
+	[11359] = "Restorative Potion",
+	[17550] = "Purification Potion",
+	[45426] = "Lucidity Potion",
+
+	-- juju
+	[16321] = "Juju Escape",
+	[16322] = "Juju Flurry",
+	[16323] = "Juju Power",
+	[16325] = "Juju Chill",
+	[16326] = "Juju Ember",
+	[16327] = "Juju Guile",
+	[16329] = "Juju Might",
+	-- misc
+	[15231] = "Crystal Force",
+	[15279] = "Crystal Spire",
+	[29332] = "Fire-toasted Bun",
+	[5665]  = "Bogling Root",
+	[23645] = "Hourglass Sand",
+	[6727]  = "Poisonous Mushroom",
+	[15852] = "Dragonbreath Chili",
+	[11350] = "Oil of Immolation",
+
+	-- misc 2
+	[23133] = "Gnomish Battle Chicken",
+	[23074] = "Arcanite Dragonling",
+	[18307] = "Barov Peasant Caller", -- horde
+	[18308] = "Barov Peasant Caller", -- alliance
+	[8892]  = "Goblin Rocket Boots",
+	[17490] = "Ancient Cornerstone Grimoire",
+	[26066] = "Defender of the Timbermaw",
+
+	-- misc 3
+	[46002] = "Goblin Brainwashing Device",
+	-- [21358] = "Rune of the Firelord", "has doused a", nil, "ff1eff00", "raid" },
+  -- [45304] = { "Rune of the Firelord", "has doused a", nil, "ff1eff00", "raid" },
+  [46001] = "MOLL-E, Remote Mail Terminal",
+  -- [27571] = { "Cascade of Red Roses", "has showered a", "on", "ffff86e0", "any" },
+  -- [45407] = { "Oranges", "is summoning", nil, "ff1eff00", "zone" }, -- special
+	-- dynamite
+	[15239] = "Crystal Charge",
+	[4068]  = "Iron Grenade",
+	[23063] = "Dense Dynamite",
+	[12419] = "Solid Dynamite",
+	[19769] = "Thorium Grenade",
+	[13241] = "Goblin Sapper Charge",
+	[17291] = "Stratholme Holy Water",
+
+	-- weapons
+	[20747] = "Lesser Mana Oil",
+	[25123] = "Brilliant Mana Oil",
+	[25121] = "Wizard Oil",
+	[25122] = "Brilliant Wizard Oil",
+	[28898] = "Blessed Wizard Oil",
+	[28891] = "Consecrated Sharpening Stone",
+	[3829]  = "Frost Oil",
+	[3594]  = "Shadow Oil",
+	[22756] = "Elemental Sharpening Stone",
+	[16138] = "Dense Sharpening Stone",
+	[16622] = "Dense Weightstone",
+	[46070] = "Cleaning Cloth",
 }
 
+
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
-	if not trackedSpells[spellID] then
-		return
-	end
-	if event ~= "CAST" then
-		--we do not want cast starts, only finished ones
+	if not (trackedSpells[spellID] or trackedConsumes[spellID]) then
 		return
 	end
 
-	local spellName = trackedSpells[spellID]
-	local targetName = UnitName(target) --get name from GUID
-	local casterName = UnitName(caster)
+	if event ~= "CAST" then return end
 
-	-- seems like on razorgore either caster or target can be null here
-	-- probably related to MC
-	CombatLogAdd(tostring(casterName) .. " casts " .. spellName .. " on " .. tostring(targetName) .. ".")
+	local spell = trackedSpells[spellID] or trackedConsumes[spellID]
+	if not spell then return end
+
+	local casterName = UnitName(caster) --get name from GUID
+	local targetName = UnitName(target)
+	-- -- seems like on razorgore either caster or target can be null here
+	-- -- probably related to MC
+	if not casterName then casterName = "Unknown" end
+	local verb = trackedConsumes[spellID] and " uses " or " casts "
+	if targetName then
+		CombatLogAdd(casterName .. verb .. spell .. " on " .. targetName .. ".")
+	else
+		CombatLogAdd(casterName .. verb .. spell .. ".")
+	end
 end
 
 RPLL.ZONE_CHANGED_NEW_AREA = function()
@@ -218,20 +439,27 @@ RPLL.PLAYER_ENTERING_WORLD = function()
 	this:PARTY_MEMBERS_CHANGED()
 end
 
+local rcount = 0
 RPLL.RAID_ROSTER_UPDATE = function()
-	for i = 1, GetNumRaidMembers() do
+	local rnow = GetNumRaidMembers()
+	if rnow == rcount then return end
+	for i = 1, rnow do
 		if UnitName("raid" .. i) then
 			this:grab_unit_information("raid" .. i)
 		end
 	end
+	rcount = rnow
 end
 
+local pcount = 0
 RPLL.PARTY_MEMBERS_CHANGED = function()
-	for i = 1, GetNumPartyMembers() do
+	local pnow = GetNumPartyMembers()
+	for i = 1, pnow do
 		if UnitName("party" .. i) then
 			this:grab_unit_information("party" .. i)
 		end
 	end
+	pcount = pnow
 end
 
 RPLL.UNIT_PET = function(unit)
@@ -250,6 +478,14 @@ end
 
 RPLL.CHAT_MSG_LOOT = function(msg)
 	CombatLogAdd("LOOT: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
+end
+
+RPLL.CHAT_MSG_SYSTEM = function(msg)
+	-- "Iseut trades item Libram of the Faithful to Milkpress."
+	local trade = string.find(msg, "^%w+ trades item")
+	if trade then
+		CombatLogAdd("LOOT_TRADE: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
+	end
 end
 
 function RPLL:DeepSubString(str1, str2)
