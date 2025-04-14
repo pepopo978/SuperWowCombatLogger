@@ -39,7 +39,7 @@ def replace_instances(player_name, filename):
         r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
         r"  Your ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) is dismissed.": r"  \g<2>'s \g<1> (\g<2>) is dismissed.",
         # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
-        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)": r"  \g<2>",  # pet ability
+        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)('s| 's)": r"  \g<2> 's",  # pet ability
         r"from ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)('s| 's)": r"from \g<2>\g<3>",  # pet ability
     }
 
@@ -120,6 +120,7 @@ def replace_instances(player_name, filename):
         r"'s Insect Swarm\.": "'s Locust Swarm.",  # make Insect Swarm dot appear as a separate spell
         r"'s Holy Fire\.": "'s Cleansing Flames.",  # make Holy Fire dot appear as a separate spell
         r"'s Flame Shock\.": "'s Improved Flame Shock.",  # make Flame Shock dot appear as a separate spell
+        r"'s Mind Flay (hits|crits)": r"'s Mind Flay Damage Proc \1",  # make T3 Shadow Priest 6-set bonus appear as a separate spell
 
         # convert totem spells to appear as though the shaman cast them so that player gets credit
         r"  [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r"  \g<1> 's",

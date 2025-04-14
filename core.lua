@@ -1,16 +1,16 @@
 if not SetAutoloot then
 
-  StaticPopupDialogs["NO_SUPERWOW_RPLL"] = {
-    text = "|cffffff00SuperWowCombatLogger|r requires SuperWoW to operate.",
-    button1 = TEXT(OKAY),
-    timeout = 0,
-    whileDead = 1,
-    hideOnEscape = 1,
+	StaticPopupDialogs["NO_SUPERWOW_RPLL"] = {
+		text = "|cffffff00SuperWowCombatLogger|r requires SuperWoW to operate.",
+		button1 = TEXT(OKAY),
+		timeout = 0,
+		whileDead = 1,
+		hideOnEscape = 1,
 		showAlert = 1,
-  }
+	}
 
-  StaticPopup_Show("NO_SUPERWOW_RPLL")
-  return
+	StaticPopup_Show("NO_SUPERWOW_RPLL")
+	return
 end
 
 local RPLL = RPLL
@@ -108,15 +108,17 @@ local trackedSpells = {
 	[24658] = "Unstable Power",
 	[11129] = "Combustion",
 	[20549] = "War Stomp",
-	[1044]  = "Blessing of Freedom",
-	[1022]  = "Blessing of Protection", -- rank 1
-	[5599]  = "Blessing of Protection", -- rank 2
+	[1044] = "Blessing of Freedom",
+	[1022] = "Blessing of Protection", -- rank 1
+	[5599] = "Blessing of Protection", -- rank 2
 	[10278] = "Blessing of Protection", -- rank 3
-	[6940]  = "Blessing of Sacrifice", -- rank 1
+	[6940] = "Blessing of Sacrifice", -- rank 1
 	[20729] = "Blessing of Sacrifice", -- rank 2
 	[9907] = "Faerie Fire",
 	[17392] = "Faerie Fire (Feral)",
 	[11597] = "Sunder Armor",
+	[1161] = "Challenging Shout",
+	[5209] = "Challenging Roar",
 
 	[11722] = "Curse of the Elements", -- lock
 	[11717] = "Curse of Recklessness",
@@ -201,7 +203,7 @@ local trackedConsumes = {
 	-- elixirs:
 	[11390] = "Arcane Elixir",
 	[17539] = "Greater Arcane Elixir",
-	[7844]  = "Elixir of Firepower",
+	[7844] = "Elixir of Firepower",
 	[26276] = "Elixir of Greater Firepower",
 	[11474] = "Elixir of Shadow Power",
 	[45988] = "Elixir of Greater Nature Power",
@@ -220,7 +222,7 @@ local trackedConsumes = {
 	[11348] = "Elixir of Superior Defense",
 	[24361] = "Major Troll's Blood Potion", -- laugh
 
-	[3593]  = "Elixir of Fortitude",
+	[3593] = "Elixir of Fortitude",
 	[17038] = "Winterfall Firewater",
 	[11371] = "Gift of Arthas",
 
@@ -264,21 +266,21 @@ local trackedConsumes = {
 	[10669] = "Ground Scorpok Assay",
 	[10693] = "Gizzard Gum",
 	-- potions
-	[3169]  = "Limited Invulnerability Potion",
-	[3680]  = "Lesser Invisibility Potion",
+	[3169] = "Limited Invulnerability Potion",
+	[3680] = "Lesser Invisibility Potion",
 	[11392] = "Invisibility Potion",
 	[45425] = "Potion of Quickness",
 	[16589] = "Noggenfogger Elixir",
-	[6615]  = "Free Action Potion",
+	[6615] = "Free Action Potion",
 	[24364] = "Living Action Potion",
-	[4941]  = "Lesser Stoneshield Potion",
+	[4941] = "Lesser Stoneshield Potion",
 	[17540] = "Greater Stoneshield Potion",
-	[8212]  = "Elixir of Giant Growth",
-	[6613]  = "Great Rage Potion",
+	[8212] = "Elixir of Giant Growth",
+	[6613] = "Great Rage Potion",
 	[17528] = "Mighty Rage Potion",
-	[2379]  = "Swiftness Potion",
+	[2379] = "Swiftness Potion",
 	-- restoratives
-	[9512]  = "Thistle Tea",
+	[9512] = "Thistle Tea",
 	[17534] = "Major Healing Potion",
 	[17531] = "Major Mana Potion",
 	[22729] = "Major Rejuvenation Potion",
@@ -297,23 +299,23 @@ local trackedConsumes = {
 	[12177] = "Scroll of Spirit IV",
 	[12175] = "Scroll of Protection IV",
 	-- protections
-	[7233]  = "Fire Protection Potion",
+	[7233] = "Fire Protection Potion",
 	[17543] = "Greater Fire Protection Potion",
-	[7239]  = "Frost Protection Potion",
+	[7239] = "Frost Protection Potion",
 	[17544] = "Greater Frost Protection Potion",
-	[7254]  = "Nature Protection Potion",
+	[7254] = "Nature Protection Potion",
 	[17546] = "Greater Nature Protection Potion",
-	[7242]  = "Shadow Protection Potion",
+	[7242] = "Shadow Protection Potion",
 	[17548] = "Greater Shadow Protection Potion",
-	[7245]  = "Holy Protection Potion",
+	[7245] = "Holy Protection Potion",
 	[17545] = "Greater Holy Protection Potion",
 	[17549] = "Greater Arcane Protection Potion",
 	-- cleanse
 	[26677] = "Elixir of Poison Resistance",
-	[7932]  = "Anti-Venom",
-	[7933]  = "Strong Anti-Venom",
+	[7932] = "Anti-Venom",
+	[7933] = "Strong Anti-Venom",
 	[23786] = "Powerful Anti-Vendom",
-	[3592]  = "Jungle Remedy",
+	[3592] = "Jungle Remedy",
 	[11359] = "Restorative Potion",
 	[17550] = "Purification Potion",
 	[45426] = "Lucidity Potion",
@@ -330,9 +332,9 @@ local trackedConsumes = {
 	[15231] = "Crystal Force",
 	[15279] = "Crystal Spire",
 	[29332] = "Fire-toasted Bun",
-	[5665]  = "Bogling Root",
+	[5665] = "Bogling Root",
 	[23645] = "Hourglass Sand",
-	[6727]  = "Poisonous Mushroom",
+	[6727] = "Poisonous Mushroom",
 	[15852] = "Dragonbreath Chili",
 	[11350] = "Oil of Immolation",
 
@@ -341,20 +343,20 @@ local trackedConsumes = {
 	[23074] = "Arcanite Dragonling",
 	[18307] = "Barov Peasant Caller", -- horde
 	[18308] = "Barov Peasant Caller", -- alliance
-	[8892]  = "Goblin Rocket Boots",
+	[8892] = "Goblin Rocket Boots",
 	[17490] = "Ancient Cornerstone Grimoire",
 	[26066] = "Defender of the Timbermaw",
 
 	-- misc 3
 	[46002] = "Goblin Brainwashing Device",
 	-- [21358] = "Rune of the Firelord", "has doused a", nil, "ff1eff00", "raid" },
-  -- [45304] = { "Rune of the Firelord", "has doused a", nil, "ff1eff00", "raid" },
-  [46001] = "MOLL-E, Remote Mail Terminal",
-  -- [27571] = { "Cascade of Red Roses", "has showered a", "on", "ffff86e0", "any" },
-  -- [45407] = { "Oranges", "is summoning", nil, "ff1eff00", "zone" }, -- special
+	-- [45304] = { "Rune of the Firelord", "has doused a", nil, "ff1eff00", "raid" },
+	[46001] = "MOLL-E, Remote Mail Terminal",
+	-- [27571] = { "Cascade of Red Roses", "has showered a", "on", "ffff86e0", "any" },
+	-- [45407] = { "Oranges", "is summoning", nil, "ff1eff00", "zone" }, -- special
 	-- dynamite
 	[15239] = "Crystal Charge",
-	[4068]  = "Iron Grenade",
+	[4068] = "Iron Grenade",
 	[23063] = "Dense Dynamite",
 	[12419] = "Solid Dynamite",
 	[19769] = "Thorium Grenade",
@@ -368,30 +370,35 @@ local trackedConsumes = {
 	[25122] = "Brilliant Wizard Oil",
 	[28898] = "Blessed Wizard Oil",
 	[28891] = "Consecrated Sharpening Stone",
-	[3829]  = "Frost Oil",
-	[3594]  = "Shadow Oil",
+	[3829] = "Frost Oil",
+	[3594] = "Shadow Oil",
 	[22756] = "Elemental Sharpening Stone",
 	[16138] = "Dense Sharpening Stone",
 	[16622] = "Dense Weightstone",
 	[46070] = "Cleaning Cloth",
 }
 
-
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 	if not (trackedSpells[spellID] or trackedConsumes[spellID]) then
 		return
 	end
 
-	if event ~= "CAST" then return end
+	if event ~= "CAST" then
+		return
+	end
 
 	local spell = trackedSpells[spellID] or trackedConsumes[spellID]
-	if not spell then return end
+	if not spell then
+		return
+	end
 
 	local casterName = UnitName(caster) --get name from GUID
 	local targetName = UnitName(target)
 	-- -- seems like on razorgore either caster or target can be null here
 	-- -- probably related to MC
-	if not casterName then casterName = "Unknown" end
+	if not casterName then
+		casterName = "Unknown"
+	end
 	local verb = trackedConsumes[spellID] and " uses " or " casts "
 	if targetName then
 		CombatLogAdd(casterName .. verb .. spell .. " on " .. targetName .. ".")
@@ -442,7 +449,9 @@ end
 local rcount = 0
 RPLL.RAID_ROSTER_UPDATE = function()
 	local rnow = GetNumRaidMembers()
-	if rnow == rcount then return end
+	if rnow == rcount then
+		return
+	end
 	for i = 1, rnow do
 		if UnitName("raid" .. i) then
 			this:grab_unit_information("raid" .. i)
