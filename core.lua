@@ -220,7 +220,7 @@ local trackedConsumes = {
 	[17537] = "Elixir of Brute Force", -- laugh
 	[11349] = "Elixir of Greater Defense", -- laugh
 	[11348] = "Elixir of Superior Defense",
-	[24361] = "Major Troll's Blood Potion", -- laugh
+	[24361] = "Major Trolls Blood Potion", -- laugh
 
 	[3593] = "Elixir of Fortitude",
 	[17038] = "Winterfall Firewater",
@@ -233,22 +233,22 @@ local trackedConsumes = {
 	[18140] = "Blessed Sunfruit Juice",
 	[18230] = "Grilled Squid",
 
-	[57043] = "Danonzo's Tel'Abim Delight",
-	[57045] = "Danonzo's Tel'Abim Medley",
-	[57055] = "Danonzo's Tel'Abim Surprise",
+	[57043] = "Danonzos Tel'Abim Delight",
+	[57045] = "Danonzos Tel'Abim Medley",
+	[57055] = "Danonzos Tel'Abim Surprise",
 
 	[24800] = "Power Mushroom",
 	[25660] = "Hardened Mushroom",
-	-- [25660] = "Dirge's Kickin' Chimaerok Chops", -- same as hardened mush
+	-- [25660] = "Dirges Kickin' Chimaerok Chops", -- same as hardened mush
 	[45624] = "Le Fishe Au Chocolat",
 	[46084] = "Gurubashi Gumbo",
 	-- drinks
 	[22789] = "Gordok Green Grog",
 	[20875] = "Rumsey Rum",
 	[25804] = "Rumsey Rum Black Label",
-	[57106] = "Medivh's Merlot",
-	[57107] = "Medivh's Merlot Blue Label",
-	[22790] = "Kreeg's Stout Beatdown",
+	[57106] = "Medivhs Merlot",
+	[57107] = "Medivhs Merlot Blue Label",
+	[22790] = "Kreegs Stout Beatdown",
 
 	-- flasks
 	[17626] = "Flask of the Titans",
@@ -261,7 +261,7 @@ local trackedConsumes = {
 	[24417] = "Sheen of Zanza",
 	-- blasted
 	[10692] = "Cerebral Cortex Compound",
-	[10667] = "R.O.I.D.S.",
+	[10667] = "Rage of Ages",
 	[10668] = "Lung Juice Cocktail",
 	[10669] = "Ground Scorpok Assay",
 	[10693] = "Gizzard Gum",
