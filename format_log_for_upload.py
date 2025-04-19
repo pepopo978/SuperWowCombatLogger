@@ -100,9 +100,9 @@ def replace_instances(player_name, filename):
         r" is afflicted by .*\)\.": r"\g<0>",  # some buffs/debuffs have 's in them, need to ignore these lines
 
         # handle 's at beginning of line by looking for [double space] [playername] [Capital letter]
-        r"  ([a-zA-Z' ]*?\S)'s ([A-Z])": r"  \g<1> 's \g<2>",
-        r"from ([a-zA-Z' ]*?\S)'s ([A-Z])": r"from \g<1> 's \g<2>",  # handle 's in middle of line by looking for 'from'
-        r"is immune to ([a-zA-Z' ]*?\S)'s ([A-Z])": r"is immune to \g<1> 's \g<2>",
+        r"  ([a-zA-Z'\- ]*?\S)'s ([A-Z])": r"  \g<1> 's \g<2>",
+        r"from ([a-zA-Z'\- ]*?\S)'s ([A-Z])": r"from \g<1> 's \g<2>",  # handle 's in middle of line by looking for 'from'
+        r"is immune to ([a-zA-Z'\- ]*?\S)'s ([A-Z])": r"is immune to \g<1> 's \g<2>",
         # handle 's in middle of line by looking for 'is immune to'
         r"\)'s ([A-Z])": r") 's \g<1>",  # handle 's for pets
     }
