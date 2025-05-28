@@ -374,7 +374,10 @@ local trackedConsumes = {
 	[16138] = "Dense Sharpening Stone",
 	[16622] = "Dense Weightstone",
 	[46070] = "Cleaning Cloth",
+}
 
+
+local dbConsumes = {
 	-- all potions in the database
 	[436] = "Restore Mana",
 	[437] = "Restore Mana",
@@ -868,7 +871,7 @@ local trackedConsumes = {
 	[65017] = "Scroll of Empowered Protection",
 	[65018] = "Scroll of Magic Warding",
 	[70241] = "Amberglaze Donut",
-	[80104] = "Sprat’s Crunchy Vulture Surprise",
+	[80104] = "Sprat's Crunchy Vulture Surprise",
 	[80156] = "Highpeak Thistle",
 	[80167] = "Kaja'Cola",
 	[80168] = "Crunchy Murloc Fin",
@@ -882,6 +885,15 @@ local trackedConsumes = {
 	[84041] = "Gilneas Hot Stew",
 	[84605] = "Mysterious Floater",
 }
+
+
+-- add if it doesn't already exist
+for key, val in pairs(dbConsumes) do
+  if trackedConsumes[key] == nil then
+    trackedConsumes[key] = val
+  end
+end
+
 
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 	if not (trackedSpells[spellID] or trackedConsumes[spellID]) then
