@@ -110,21 +110,12 @@ def replace_instances(player_name, filename):
     # Renames occur last
     # Only the first match will be replaced
     renames = {
-        r"'s Fireball\.": "'s Improved Fireball.",  # make Fireball dot appear as a separate spell
-        r"'s Flamestrike\.": "'s Improved Flamestrike.",  # make Flamestrike dot appear as a separate spell
-        r"'s Pyroblast\.": "'s Pyroclast Barrage.",  # make Pyroblast dot appear as a separate spell
-        r"'s Immolate\.": "'s Improved Immolate.",  # make Immolate dot appear as a separate spell
-        r"'s Corruption\.": "'s Improved Corruption.",  # make Corruption dot appear as a separate spell
-        r"'s Curse of Agony\.": "'s Improved Curse of Agony.",  # make Curse of Agony dot appear as a separate spell
-        r"'s Moonfire\.": "'s Improved Moonfire.",  # make Moonfire dot appear as a separate spell
-        r"'s Insect Swarm\.": "'s Locust Swarm.",  # make Insect Swarm dot appear as a separate spell
-        r"'s Holy Fire\.": "'s Cleansing Flames.",  # make Holy Fire dot appear as a separate spell
-        r"'s Flame Shock\.": "'s Improved Flame Shock.",  # make Flame Shock dot appear as a separate spell
-        r"'s Mind Flay (hits|crits)": r"'s Mind Flay Damage Proc \1",  # make T3 Shadow Priest 6-set bonus appear as a separate spell
-
         # convert totem spells to appear as though the shaman cast them so that player gets credit
         r"  [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r"  \g<1> 's",
         r" from [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r" from \g<1> 's",
+
+        r"Lightning Strike was resisted": r"Lightning Strike (nature) was resisted", # separate nature portion of Lightning Strike
+        r"Lightning Strike (.*) Nature damage": r"Lightning Strike (nature) \g<1> Nature damage",  # separate nature portion of Lightning Strike
 
         "Onyxias Elite Guard": "Onyxia's Elite Guard",  # readd apostrophes
         "Sarturas Royal Guard": "Sartura's Royal Guard",
