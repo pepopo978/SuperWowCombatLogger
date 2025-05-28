@@ -374,6 +374,17 @@ local trackedConsumes = {
 	[16138] = "Dense Sharpening Stone",
 	[16622] = "Dense Weightstone",
 	[46070] = "Cleaning Cloth",
+
+
+	-- remove 's
+	[60593] = "Jarls Juicy Jumbly",
+	[80104] = "Sprats Crunchy Vulture Surprise",
+	[7228] = "Tigule and Forors Strawberry Ice Cream",
+	[17407] = "Graccus Homemade Meat Pie",
+	[18633] = "Styleens Sour Suckerpop",
+	[18635] = "Bellaras Nutterbar",
+	[21023] = "Dirges Kickin' Chimaerok Chops",
+	[21215] = "Graccus Mince Meat Fruitcake",
 }
 
 
