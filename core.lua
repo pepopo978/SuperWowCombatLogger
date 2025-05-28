@@ -335,6 +335,12 @@ local trackedConsumes = {
 	[6727] = "Poisonous Mushroom",
 	[15852] = "Dragonbreath Chili",
 	[11350] = "Oil of Immolation",
+	[27664] = "Stormwind Gift of Friendship",
+	[27665] = "Ironforge Gift of Friendship",
+	[27666] = "Darnassus Gift of Friendship",
+	[27669] = "Orgrimmar Gift of Friendship",
+	[27670] = "Thunder Bluff Gift of Friendship",
+	[27671] = "Undercity Gift of Friendship",
 
 	-- misc 2
 	[23133] = "Gnomish Battle Chicken",
