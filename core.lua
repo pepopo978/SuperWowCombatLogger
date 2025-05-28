@@ -93,8 +93,110 @@ RPLL.UNIT_INVENTORY_CHANGED = function(unit)
 	this:grab_unit_information(unit)
 end
 
-local ignoredSpellIds = {}
+local trackedSpells = {
+	[11597] = "Sunder Armor",
+	[11722] = "Curse of the Elements",
+	[11717] = "Curse of Recklessness",
+	[17937] = "Curse of Shadow",
+	[11708] = "Curse of Weakness",
+	[20572] = "Blood Fury",
+	[45511] = "Bloodlust",
+	[29602] = "Jom Gabbar",
+	[28200] = "Ascendance",
+	[24658] = "Unstable Power",
+	[11129] = "Combustion",
+	[20549] = "War Stomp",
+	[1044] = "Blessing of Freedom",
+	[1022] = "Blessing of Protection", -- rank 1
+	[5599] = "Blessing of Protection", -- rank 2
+	[10278] = "Blessing of Protection", -- rank 3
+	[6940] = "Blessing of Sacrifice", -- rank 1
+	[20729] = "Blessing of Sacrifice", -- rank 2
+	[11597] = "Sunder Armor",
+	[1161] = "Challenging Shout",
+	[5209] = "Challenging Roar",
 
+	[11722] = "Curse of the Elements", -- lock
+	[11717] = "Curse of Recklessness",
+	[17937] = "Curse of Shadow",
+	[11708] = "Curse of Weakness",
+	[11719] = "Curse of Tongues",
+	[25311] = "Corruption",
+	[11713] = "Curse of Agony",
+
+	[1038] = "Blessing of Salvation", -- pally
+	[10278] = "Blessing of Protection",
+	[20217] = "Blessing of Kings",
+	[19979] = "Blessing of Light",
+	[20914] = "Blessing of Sanctuary",
+	[20729] = "Blessing of Sacrifice",
+	[25291] = "Blessing of Might",
+	[25290] = "Blessing of Wisdom",
+	[25895] = "Greater Blessing of Salvation",
+	[25898] = "Greater Blessing of Kings",
+	[25890] = "Greater Blessing of Light",
+	[25916] = "Greater Blessing of Might",
+	[25918] = "Greater Blessing of Wisdom",
+	[25899] = "Greater Blessing of Sanctuary",
+	[45801] = "Greater Blessing of Sacrifice",
+
+	[10060] = "Power Infusion", -- priest
+	[10938] = "Power Word: Fortitude",
+	[23948] = "Power Word: Fortitude",
+	[10901] = "Power Word: Shield",
+	[27607] = "Power Word: Shield",
+	[23948] = "Power Word: Fortitude",
+	[21564] = "Prayer of Fortitude",
+	[45551] = "Prayer of Spirit",
+
+	[10157] = "Arcane Intellect", -- mage
+	[23028] = "Arcane Brilliance",
+
+	[45511] = "Bloodlust", --shaman
+
+	[16878] = "Mark of the Wild", --druid
+	[24752] = "Mark of the Wild",
+	[21850] = "Gift of the Wild",
+	[57108] = "Emerald Blessing",
+	[24977] = "Insect Swarm",
+	[9907] = "Faerie Fire",
+	[17392] = "Faerie Fire (Feral)",
+
+	[11198] = "Expose Armor",
+	--only tracking max rank for above spells
+
+	[774] = "Improved Rejuvenation", --r1
+	[1058] = "Improved Rejuvenation", --r2
+	[1430] = "Improved Rejuvenation", --r3
+	[2090] = "Improved Rejuvenation", --r4
+	[2091] = "Improved Rejuvenation", --r5
+	[3627] = "Improved Rejuvenation", --r6
+	[8910] = "Improved Rejuvenation", --r7
+	[9839] = "Improved Rejuvenation", --r8
+	[9840] = "Improved Rejuvenation", --r9
+	[9841] = "Improved Rejuvenation", --r10
+	[25299] = "Improved Rejuvenation", --r11
+	[8936] = "Improved Regrowth", --r1
+	[8938] = "Improved Regrowth", --r2
+	[8939] = "Improved Regrowth", --r3
+	[8940] = "Improved Regrowth", --r4
+	[8941] = "Improved Regrowth", --r5
+	[9750] = "Improved Regrowth", --r6
+	[9856] = "Improved Regrowth", --r7
+	[9857] = "Improved Regrowth", --r8
+	[9858] = "Improved Regrowth", --r9
+	[139] = "Improved Renew", --r1
+	[6074] = "Improved Renew", --r2
+	[6075] = "Improved Renew", --r3
+	[6076] = "Improved Renew", --r4
+	[6077] = "Improved Renew", --r5
+	[6078] = "Improved Renew", --r6
+	[10927] = "Improved Renew", --r7
+	[10928] = "Improved Renew", --r8
+	[27606] = "Improved Renew", --r9
+	[10929] = "Improved Renew", --r9 again?
+	[25315] = "Improved Renew", --r10
+} --only tracking max rank
 local trackedConsumes = {
 	-- elixirs:
 	[11390] = "Arcane Elixir",
@@ -275,18 +377,17 @@ local trackedConsumes = {
 }
 
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
-	if event == "START" and not trackedConsumes[spellID] then
-		ignoredSpellIds[spellID] = true -- ignore all spells that trigger START event (have a cast) to avoid duplicate logging
+	if not (trackedSpells[spellID] or trackedConsumes[spellID]) then
 		return
 	end
 
-	if event ~= "CAST" or ignoredSpellIds[spellID] then
+	if event ~= "CAST" then
 		return
 	end
 
-	local spell = trackedConsumes[spellID]
+	local spell = trackedSpells[spellID] or trackedConsumes[spellID]
 	if not spell then
-		spell = SpellInfo(spellID) -- get spell name from spellID using superwow
+		return
 	end
 
 	local casterName = UnitName(caster) --get name from GUID
