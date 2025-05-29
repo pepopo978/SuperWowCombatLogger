@@ -314,6 +314,10 @@ local trackedConsumes = {
 	--[17534] = "The McWeaksauce Classic",
 	[17534] = "Major Healing Potion",
 
+	--[24869] = "Bobbing Apple",
+	--[24869] = "Plump Country Pumpkin",
+	[24869] = "Winter Veil Cookie",  -- avoids ambiguous consumable: pumpkin
+
 	--[5004] = "Spiced Wolf Meat",
 	--[5004] = "Beer Basted Boar Ribs",
 	--[5004] = "Kaldorei Spider Kabob",
