@@ -298,6 +298,9 @@ local trackedConsumes = {
 	--[24800] = "Spicy Beef Burrito",
 	[24800] = "Power Mushroom",
 
+	--[19199] = "Nordanaar Herbal Tea",
+	[19199] = "Tea with Sugar",
+
 	--[25660] = "Dirge's Kickin' Chimaerok Chops",
 	--[25660] = "Gnome Stew",
 	--[25660] = "Roasted Tauren",
