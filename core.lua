@@ -210,6 +210,7 @@ local trackedConsumes = {
 	-- drinks
 	[20875] = "Rumsey Rum",
 	[25804] = "Rumsey Rum Black Label",
+	[25722] = "Rumsey Rum Dark",
 
 	-- potions
 	[16589] = "Noggenfogger Elixir",
