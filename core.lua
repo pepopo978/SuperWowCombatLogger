@@ -230,7 +230,7 @@ local trackedConsumes = {
 	-- cleanse
 	[7932] = "Anti-Venom",
 	[7933] = "Strong Anti-Venom",
-	[23786] = "Powerful Anti-Vendom",
+	[23786] = "Powerful Anti-Venom",
 	[3592] = "Jungle Remedy",
 
 	-- juju
