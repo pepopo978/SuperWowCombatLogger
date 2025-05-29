@@ -198,91 +198,23 @@ local trackedSpells = {
 	[25315] = "Improved Renew", --r10
 } --only tracking max rank
 local trackedConsumes = {
-	-- elixirs:
-	[11390] = "Arcane Elixir",
-	[17539] = "Greater Arcane Elixir",
-	[7844] = "Elixir of Firepower",
-	[26276] = "Elixir of Greater Firepower",
-	[11474] = "Elixir of Shadow Power",
-	[45988] = "Elixir of Greater Nature Power",
-	[21920] = "Elixir of Frost Power",
-	[45427] = "Dreamshard Elixir",
-	[45489] = "Dreamtonic",
-	[24363] = "Mageblood Potion",
-
-	[11328] = "Elixir of Agility",
-	[11334] = "Elixir of Greater Agility",
-	[17538] = "Elixir of the Mongoose",
-	[11405] = "Elixir of Giants",
-	[17535] = "Elixir of the Sages", -- laugh
-	[17537] = "Elixir of Brute Force", -- laugh
-	[11349] = "Elixir of Greater Defense", -- laugh
-	[11348] = "Elixir of Superior Defense",
-	[24361] = "Major Trolls Blood Potion", -- laugh
-
-	[3593] = "Elixir of Fortitude",
-	[17038] = "Winterfall Firewater",
-	[11371] = "Gift of Arthas",
+	-- elixirs
+	-- flasks
+	-- zanzas
+	-- blasted
+	-- protections
 
 	-- food:
 	[18194] = "Nightfin Soup",
-	-- [24800] = "Smoked Desert Dumplings", -- same  as power mush
-	[18124] = "Blessed Sunfruit",
-	[18140] = "Blessed Sunfruit Juice",
-	[18230] = "Grilled Squid",
 
-	[57043] = "Danonzos Tel'Abim Delight",
-	[57045] = "Danonzos Tel'Abim Medley",
-	[57055] = "Danonzos Tel'Abim Surprise",
-
-	[24800] = "Power Mushroom",
-	[25660] = "Hardened Mushroom",
-	-- [25660] = "Dirges Kickin' Chimaerok Chops", -- same as hardened mush
-	[45624] = "Le Fishe Au Chocolat",
-	[46084] = "Gurubashi Gumbo",
 	-- drinks
-	[22789] = "Gordok Green Grog",
 	[20875] = "Rumsey Rum",
 	[25804] = "Rumsey Rum Black Label",
-	[57106] = "Medivhs Merlot",
-	[57107] = "Medivhs Merlot Blue Label",
-	[22790] = "Kreegs Stout Beatdown",
+	[25722] = "Rumsey Rum Dark",
 
-	-- flasks
-	[17626] = "Flask of the Titans",
-	[17627] = "Flask of Distilled Wisdom",
-	[17628] = "Flask of Supreme Power",
-	[17629] = "Flask of Chromatic Resistance",
-	-- zanzas
-	[24382] = "Spirit of Zanza",
-	[24383] = "Swiftness of Zanza",
-	[24417] = "Sheen of Zanza",
-	-- blasted
-	[10692] = "Cerebral Cortex Compound",
-	[10667] = "Rage of Ages",
-	[10668] = "Lung Juice Cocktail",
-	[10669] = "Ground Scorpok Assay",
-	[10693] = "Gizzard Gum",
 	-- potions
-	[3169] = "Limited Invulnerability Potion",
-	[3680] = "Lesser Invisibility Potion",
-	[11392] = "Invisibility Potion",
-	[45425] = "Potion of Quickness",
 	[16589] = "Noggenfogger Elixir",
-	[6615] = "Free Action Potion",
-	[24364] = "Living Action Potion",
-	[4941] = "Lesser Stoneshield Potion",
-	[17540] = "Greater Stoneshield Potion",
-	[8212] = "Elixir of Giant Growth",
-	[6613] = "Great Rage Potion",
-	[17528] = "Mighty Rage Potion",
-	[2379] = "Swiftness Potion",
 	-- restoratives
-	[9512] = "Thistle Tea",
-	[17534] = "Major Healing Potion",
-	[17531] = "Major Mana Potion",
-	[22729] = "Major Rejuvenation Potion",
-	[19199] = "Tea With Sugar",
 	[16666] = "Demonic Rune",
 	[27869] = "Dark Rune",
 	[10850] = "Powerful Smelling Salts",
@@ -296,27 +228,11 @@ local trackedConsumes = {
 	[12176] = "Scroll of Intellect IV",
 	[12177] = "Scroll of Spirit IV",
 	[12175] = "Scroll of Protection IV",
-	-- protections
-	[7233] = "Fire Protection Potion",
-	[17543] = "Greater Fire Protection Potion",
-	[7239] = "Frost Protection Potion",
-	[17544] = "Greater Frost Protection Potion",
-	[7254] = "Nature Protection Potion",
-	[17546] = "Greater Nature Protection Potion",
-	[7242] = "Shadow Protection Potion",
-	[17548] = "Greater Shadow Protection Potion",
-	[7245] = "Holy Protection Potion",
-	[17545] = "Greater Holy Protection Potion",
-	[17549] = "Greater Arcane Protection Potion",
 	-- cleanse
-	[26677] = "Elixir of Poison Resistance",
 	[7932] = "Anti-Venom",
 	[7933] = "Strong Anti-Venom",
-	[23786] = "Powerful Anti-Vendom",
+	[23786] = "Powerful Anti-Venom",
 	[3592] = "Jungle Remedy",
-	[11359] = "Restorative Potion",
-	[17550] = "Purification Potion",
-	[45426] = "Lucidity Potion",
 
 	-- juju
 	[16321] = "Juju Escape",
@@ -329,12 +245,7 @@ local trackedConsumes = {
 	-- misc
 	[15231] = "Crystal Force",
 	[15279] = "Crystal Spire",
-	[29332] = "Fire-toasted Bun",
-	[5665] = "Bogling Root",
 	[23645] = "Hourglass Sand",
-	[6727] = "Poisonous Mushroom",
-	[15852] = "Dragonbreath Chili",
-	[11350] = "Oil of Immolation",
 	[27664] = "Stormwind Gift of Friendship",
 	[27665] = "Ironforge Gift of Friendship",
 	[27666] = "Darnassus Gift of Friendship",
@@ -382,18 +293,74 @@ local trackedConsumes = {
 	[46070] = "Cleaning Cloth",
 
 
-	-- remove 's
-	[60593] = "Jarls Juicy Jumbly",
-	[80104] = "Sprats Crunchy Vulture Surprise",
-	[7228] = "Tigule and Forors Strawberry Ice Cream",
-	[17407] = "Graccus Homemade Meat Pie",
-	[18633] = "Styleens Sour Suckerpop",
-	[18635] = "Bellaras Nutterbar",
-	[21023] = "Dirges Kickin' Chimaerok Chops",
-	[21215] = "Graccus Mince Meat Fruitcake",
+	-- manually pick an alternative
+	--[24800] = "Smoked Desert Dumplings",
+	--[24800] = "Spicy Beef Burrito",
+	[24800] = "Power Mushroom",
+
+	--[19199] = "Nordanaar Herbal Tea",
+	[19199] = "Tea with Sugar",
+
+	--[25660] = "Dirge's Kickin' Chimaerok Chops",
+	--[25660] = "Gnome Stew",
+	--[25660] = "Roasted Tauren",
+	[25660] = "Hardened Mushroom",  -- also avoids 's
+
+	--[18230] = "Sweet Mountain Berry",
+	--[18230] = "Jarl's Juicy Jumbly",
+	--[18230] = "Icepaw Cookie",
+	[18230] = "Grilled Squid",  -- also avoids 's
+
+	--[17534] = "The McWeaksauce Classic",
+	[17534] = "Major Healing Potion",
+
+	--[24869] = "Bobbing Apple",
+	--[24869] = "Plump Country Pumpkin",
+	[24869] = "Winter Veil Cookie",  -- avoids ambiguous consumable: pumpkin
+
+	--[5004] = "Spiced Wolf Meat",
+	--[5004] = "Beer Basted Boar Ribs",
+	--[5004] = "Kaldorei Spider Kabob",
+	--[5004] = "Herb Baked Egg",
+	--[5004] = "Lollipop",
+	--[5004] = "Candy Bar",
+	--[5004] = "Chocolate Square",
+	--[5004] = "Cactus Apple Surprise",
+	--[5004] = "Crispy Bat Wing",
+	--[5004] = "Gingerbread Cookie",
+	--[5004] = "Bad Egg Nog",
+	--[5004] = "Sprat’s Crunchy Vulture Surprise",
+	--[5004] = "Maritime Gumbo",
+	[5004] = "Roasted Kodo Meat",  -- also avoids 's
+
+	--[25990] = "Lovely Apple",
+	--[25990] = "Delicious Birthday Cake",
+	[25990] = "Graccus Mince Meat Fruitcake",  -- also avoids 's
+
+	[1127] = "Graccus Homemade Meat Pie",  -- also avoids 's, low level
+
+	--[435] = "Clam Chowder",
+	--[435] = "Tigule and Foror's Strawberry Ice Cream",
+	[435] = "Dig Rat Stew",  -- also avoids 's, low level
+
+	--[434] = "Styleen's Sour Suckerpop",
+	[434] = "Spiced Beef Jerky",  -- also avoids 's, low level
+
+	--[1129] = "Bellara's Nutterbar",
+	[1129] = "Crunchy Frog",  -- also avoids 's, low level
+
+
+	-- renames to remove 's and other special syntax
+	[10667] = "Rage of Ages",
+	[57106] = "Medivhs Merlot",
+	[57107] = "Medivhs Merlot Blue Label",
+	[22790] = "Kreegs Stout Beatdown",
+	[57043] = "Danonzos Tel'Abim Delight",
+	[57045] = "Danonzos Tel'Abim Medley",
+	[57055] = "Danonzos Tel'Abim Surprise",
 }
 
-
+-- auto generated, manually add stuff in trackedConsumes instead
 local dbConsumes = {
 	-- all potions in the database
 	[437] = "Minor Mana Potion",
