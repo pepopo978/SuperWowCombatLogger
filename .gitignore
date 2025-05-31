@@ -1,4 +1,6 @@
 /core - Copy.lua
+/archive
 *.txt
 *.zip
 *.exe
+*.html

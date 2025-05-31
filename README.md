@@ -25,7 +25,7 @@ It does still overwrite the initial debuff/buff events to add a (1) because I de
 ```
 - Self damage is now separated as Playername (self damage)
 - Shaman totem spells are edited to appear as though the shaman cast them so they get credit for the spell.
-- Pet autoattacks will now appear under "Pet Summoned" on their owners and their spells will appear as though the owner cast them.
+- Pet autoattacks will now appear under "Auto Attack (pet)" on their owners and their spells will appear as though the owner cast them.
 - Greater Feral Spirit, Battle Chicken, Arcanite Dragonling are similarly edited to associate with their owners.
 - Tracks the caster and target for the following max level spells that were missing from the combat log:
     - Faerie Fire

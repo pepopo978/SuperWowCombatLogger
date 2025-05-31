@@ -36,9 +36,10 @@ def replace_instances(player_name, filename):
     # Pet replacements have next priority
     # only the first match will be replaced
     pet_replacements = {
-        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Pet Summoned \g<3>",
+        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Auto Attack (pet) \g<3>",
         r"  Your ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) is dismissed.": r"  \g<2>'s \g<1> (\g<2>) is dismissed.",
         # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
+        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)('s| 's) Arcane Missiles": r"  \g<2> 's Arcane Missiles (pet)",  # differentiate Remains trinket pet arcane missiles from caster's
         r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)('s| 's)": r"  \g<2> 's",  # pet ability
         r"from ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)('s| 's)": r"from \g<2>\g<3>",  # pet ability
     }
@@ -154,7 +155,7 @@ def replace_instances(player_name, filename):
     ignored_pet_names = {"Razorgore the Untamed", "Deathknight Understudy", "Naxxramas Worshipper"}
 
     # associate common summoned pets with their owners as well
-    summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling", "The Lost"}
+    summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling", "The Lost", "Minor Arcane Elemental",}
     summoned_pet_owner_regex = r"([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)"
 
     for i, _ in enumerate(lines):
