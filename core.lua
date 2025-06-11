@@ -19,6 +19,8 @@ RPLL.MAX_MESSAGE_LENGTH = 500
 RPLL.CONSOLIDATE_CHARACTER = "{"
 RPLL.MESSAGE_PREFIX = "RPLL_HELPER_"
 
+RPLL.NUM_PLAYERS_IN_COMBAT = 0
+
 RPLL.PlayerInformation = {}
 RPLL.LoggedCombatantInfo = {}
 
@@ -40,6 +42,9 @@ RPLL:RegisterEvent("CHAT_MSG_SYSTEM")
 RPLL:RegisterEvent("UNIT_INVENTORY_CHANGED")
 
 RPLL:RegisterEvent("UNIT_CASTEVENT")
+
+RPLL:RegisterEvent("PLAYER_REGEN_DISABLED")
+RPLL:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 local tinsert = table.insert
 local UnitName = UnitName
@@ -819,6 +824,48 @@ for key, val in pairs(dbConsumes) do
   end
 end
 
+local function logPlayersInCombat()
+	local currentPlayersInCombat = 0
+	local totalPlayers = 0
+
+	if UnitInRaid("player") then
+		totalPlayers = GetNumRaidMembers()
+		for i = 1, totalPlayers do
+			if UnitAffectingCombat("raid" .. i) then
+				currentPlayersInCombat = currentPlayersInCombat + 1
+			end
+		end
+	elseif UnitInParty("player") then
+		totalPlayers = GetNumRaidMembers()
+		for i = 1, totalPlayers do
+			if UnitAffectingCombat("party" .. i) then
+				currentPlayersInCombat = currentPlayersInCombat + 1
+			end
+		end
+	end
+
+	if currentPlayersInCombat ~= RPLL.NUM_PLAYERS_IN_COMBAT then
+		RPLL.NUM_PLAYERS_IN_COMBAT = currentPlayersInCombat
+		CombatLogAdd("PLAYERS_IN_COMBAT: " .. tostring(currentPlayersInCombat) .. "/" .. tostring(totalPlayers))
+	end
+end
+
+RPLL:SetScript("OnUpdate", function()
+	if (this.limit or 1) > GetTime() then
+		return
+	else
+		this.limit = GetTime() + 15 -- update combat state every 15 seconds in case logger isn't involved in the fight
+	end
+	logPlayersInCombat()
+end)
+
+RPLL.PLAYER_REGEN_DISABLED = function()
+	logPlayersInCombat()
+end
+
+RPLL.PLAYER_REGEN_ENABLED = function()
+	logPlayersInCombat()
+end
 
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 	if not (trackedSpells[spellID] or trackedConsumes[spellID]) then
