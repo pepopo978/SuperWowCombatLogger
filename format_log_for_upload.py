@@ -155,7 +155,7 @@ def replace_instances(player_name, filename):
     ignored_pet_names = {"Razorgore the Untamed", "Deathknight Understudy", "Naxxramas Worshipper"}
 
     # associate common summoned pets with their owners as well
-    summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling", "The Lost", "Minor Arcane Elemental", "Scytheclaw Pureborn"}
+    summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling", "The Lost", "Minor Arcane Elemental",}
     summoned_pet_owner_regex = r"([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)"
 
     for i, _ in enumerate(lines):
@@ -261,9 +261,16 @@ def replace_instances(player_name, filename):
 
 
 def create_zip_file(source_file, zip_filename):
-    with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:        zipf.write(source_file,
-                                                                                             arcname=os.path.basename(
-                                                                                                 source_file))
+    with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(
+            source_file,
+            arcname=os.path.basename(source_file)
+        )
+
+
+def reset_file(log_file_name):
+    with open(log_file_name, 'w', encoding='utf-8') as file:
+        file.write('')
 
 
 player_name = input("Enter player name: ")
@@ -278,3 +285,8 @@ if not create_zip.strip() or create_zip.lower().startswith('y'):
     create_zip_file(filename, filename + ".zip")
 print(
     f"Messages with You/Your have been converted to {player_name}.  A backup of the original file has also been created.")
+
+# Clear original log
+clear_log = input('Reset original log file (default y): ')
+if not clear_log.strip() or clear_log.lower().startswith('y'):
+    reset_file()
