@@ -283,10 +283,9 @@ create_zip = input("Create zip file (default y): ")
 replace_instances(player_name, filename)
 if not create_zip.strip() or create_zip.lower().startswith('y'):
     create_zip_file(filename, filename + ".zip")
+    # Clear original log
+    clear_log = input('Reset original log file (default y): ')
+    if not clear_log.strip() or clear_log.lower().startswith('y'):
+        reset_file()
 print(
     f"Messages with You/Your have been converted to {player_name}.  A backup of the original file has also been created.")
-
-# Clear original log
-clear_log = input('Reset original log file (default y): ')
-if not clear_log.strip() or clear_log.lower().startswith('y'):
-    reset_file()
