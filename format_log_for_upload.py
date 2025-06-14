@@ -278,8 +278,8 @@ rename_file = input("Rename input file to TurtLog-{timestamp}.txt (default y): "
 replace_instances(player_name, filename)
 
 if not rename_file.strip() or rename_file.lower().startswith('y'):
-    # rename output file to TurtLog-YY-MM-DD-HH-MM.txt
-    timestamp = time.strftime("%Y-%m-%d-%H-%M")
+    # rename output file to TurtLog-YY-MM-DDTHH-MM.txt
+    timestamp = time.strftime("%Y-%m-%dT%H-%M")
     new_filename = f"TurtLog-{timestamp}.txt"
     os.rename(filename, new_filename)
     filename = new_filename
