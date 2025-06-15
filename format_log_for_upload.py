@@ -28,6 +28,7 @@ def replace_instances(player_name, filename):
         "Onyxia's Elite Guard": "Onyxias Elite Guard",
         "Sartura's Royal Guard": "Sarturas Royal Guard",
         "Medivh's Merlot Blue Label": "Medivhs Merlot Blue Label",
+        "Ima'ghaol, Herald of Desolation": "Imaghaol, Herald of Desolation",
     }
 
     # Pet renames have next priority
