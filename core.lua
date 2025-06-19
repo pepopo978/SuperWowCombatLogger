@@ -930,6 +930,14 @@ RPLL.PLAYER_ENTERING_WORLD = function()
 		RPLL_PlayerInformation = {}
 	end
 	this.PlayerInformation = RPLL_PlayerInformation
+
+	-- look for players that haven't been updated in > 1 month and remove them
+	for name, info in pairs(this.PlayerInformation) do
+		if info["last_update"] and time() - info["last_update"] > 2592000 then -- 30 days
+			this.PlayerInformation[name] = nil
+		end
+	end
+
 	this:grab_unit_information("player")
 	this:RAID_ROSTER_UPDATE()
 	this:PARTY_MEMBERS_CHANGED()
