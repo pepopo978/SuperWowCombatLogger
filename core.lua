@@ -1015,6 +1015,12 @@ function RPLL:DeepSubString(str1, str2)
 end
 
 function RPLL:QueueRaidIds()
+	-- don't log zone change if the player is a ghost (presumably released and is running back to the instance)
+	-- zone change causes legacyplayers to wipe all unit information and can cause issues
+	if UnitIsGhost("player") then
+		return
+	end
+
 	local zone = strlower(GetRealZoneText())
 	local found = false
 	for i = 1, GetNumSavedInstances() do
