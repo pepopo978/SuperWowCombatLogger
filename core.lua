@@ -120,6 +120,9 @@ local trackedSpells = {
 	[11597] = "Sunder Armor",
 	[1161] = "Challenging Shout",
 	[5209] = "Challenging Roar",
+	[51012] = "Jewel of Wild Magics",
+	[51143] = "Remains of Overwhelming Power",
+	[57667] = "Elunes Guardian",
 
 	[11722] = "Curse of the Elements", -- lock
 	[11717] = "Curse of Recklessness",
