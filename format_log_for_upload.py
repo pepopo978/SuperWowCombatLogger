@@ -182,15 +182,6 @@ def replace_instances(player_name, filename):
                     # is a player name or ability name.  Don't even think legacy displays pet info anyways.
                     line_parts[5] = "nil"
 
-                # remove turtle items that won't exist
-                for j, line_part in enumerate(line_parts):
-                    if ":" in line_part:
-                        item_parts = line_part.split(":")
-                        if len(item_parts) == 4:
-                            # definitely an item, remove any itemid > 25818 or enchantid > 3000 as they won't exist
-                            if int(item_parts[0]) > 25818 or int(item_parts[1]) >= 3000:
-                                line_parts[j] = "nil"
-
                 lines[i] = "&".join(line_parts)
 
             except Exception as e:
