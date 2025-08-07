@@ -8,7 +8,8 @@ Place `SuperWowCombatLogger` in Interface/Addons.
 # Preparing for upload
 In order to upload your logs to monkeylogs/turtlogs you need to run `format_log_for_upload.py` on your WowCombatLog.txt.  
 
-Copy this python file to the same directory as your WowCombatLog.txt and run `python format_log_for_upload.py`.  
+Copy `format_log_for_upload.py` and `run_format_log.bat`(windows) or `run_format_log.sh`(mac/linux) to the same directory as your WowCombatLog.txt and double click the appropriate `run_format_log` file.
+You can also run the python script directly in a terminal in that directory with `python format_log_for_upload.py`. 
 
 Fill in your player name and the name of your log file when prompted, update a zip containing the formatted log to monkey/turtlogs.
 
