@@ -6,6 +6,10 @@ Remove `AdvancedVanillaCombatLog` and `AdvancedVanillaCombatLog_Helper` director
 Place `SuperWowCombatLogger` in Interface/Addons.
 
 # Preparing for upload
+If you don't have Python installed you'll need to get it from here https://www.python.org/downloads/, the windows store, or whatever package manager you use.
+
+<b>In the installer wizard, make sure to check the box that says "Add Python to PATH".</b>
+
 In order to upload your logs to monkeylogs/turtlogs you need to run `format_log_for_upload.py` on your WowCombatLog.txt.  
 
 Copy `format_log_for_upload.py` and `run_format_log.bat`(windows) or `run_format_log.sh`(mac/linux) to the same directory as your WowCombatLog.txt and double click the appropriate `run_format_log` file.
