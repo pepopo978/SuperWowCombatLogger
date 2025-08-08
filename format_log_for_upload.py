@@ -218,7 +218,9 @@ def replace_instances(player_name, filename):
                 if "dies." in lines[i] or "is killed by" in lines[i]:
                     continue
 
-                lines[i] = handle_replacements(lines[i], pet_replacements)
+                # check if line contains any ignored pet names
+                if not any(ignored_pet_name in lines[i] for ignored_pet_name in ignored_pet_names):
+                    lines[i] = handle_replacements(lines[i], pet_replacements)
 
         # if line contains you/You
         if "you" in lines[i] or "You" in lines[i] or "dodged." in lines[i]:
