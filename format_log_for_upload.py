@@ -8,7 +8,7 @@ import zipfile
 def handle_replacements(line, replacements):
     for pattern, replacement in replacements.items():
         try:
-            new_text, num_subs = re.subn(pattern, replacement, line)
+            new_text, num_subs = re.subn(pattern, replacement, line, flags=re.IGNORECASE)
         except Exception as e:
             print(f"Error replacing pattern: {pattern} with replacement: {replacement}")
             print(f"Line: {line}")
