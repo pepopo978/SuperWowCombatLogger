@@ -491,6 +491,10 @@ local dbConsumes = {
 	[30331] = "Permanent Sheen of Zanza",
 	[30336] = "Permanent Spirit of Zanza",
 	[30338] = "Permanent Swiftness of Zanza",
+	[36928] = "Concoction of the Emerald Mongoose",
+	[36931] = "Concoction of the Arcane Giant",
+	[36934] = "Concoction of the Dreamwater",
+
 	[45427] = "Dreamshard Elixir",
 	[45489] = "Dreamtonic",
 	[45988] = "Elixir of Greater Nature Power",
