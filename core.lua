@@ -162,6 +162,8 @@ local trackedSpells = {
 
 	[45511] = "Bloodlust", --shaman
 
+	[14280] = "Viper Sting", -- hunter
+
 	[16878] = "Mark of the Wild", --druid
 	[24752] = "Mark of the Wild",
 	[21850] = "Gift of the Wild",
