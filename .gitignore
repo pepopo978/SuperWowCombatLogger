@@ -1,5 +1,6 @@
 /core - Copy.lua
 /archive
+/__pycache__/
 *.txt
 *.zip
 *.exe
