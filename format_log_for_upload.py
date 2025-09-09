@@ -23,6 +23,9 @@ def handle_replacements(line, replacements):
 
 def replace_instances(player_name, filename):
     player_name = player_name.strip().capitalize()
+    
+    # letter pattern including Unicode for unit names
+    L = "a-zA-Z\\u00C0-\\u017F"
 
     # Mob names with apostrophes have top priority
     # only the first match will be replaced
@@ -39,12 +42,12 @@ def replace_instances(player_name, filename):
     # Pet replacements have next priority
     # only the first match will be replaced
     pet_replacements = {
-        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) (hits|crits|misses)": r"  \g<2>'s Auto Attack (pet) \g<3>",
-        r"  Your ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\) is dismissed.": r"  \g<2>'s \g<1> (\g<2>) is dismissed.",
+        rf"  ([{L}][{L} ]+[{L}]) \(([{L}]+)\) (hits|crits|misses)": r"  \g<2>'s Auto Attack (pet) \g<3>",
+        rf"  Your ([{L}][{L} ]+[{L}]) \(([{L}]+)\) is dismissed.": r"  \g<2>'s \g<1> (\g<2>) is dismissed.",
         # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
-        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)('s| 's) Arcane Missiles": r"  \g<2> 's Arcane Missiles (pet)",  # differentiate Remains trinket pet arcane missiles from caster's
-        r"  ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)('s| 's)": r"  \g<2> 's",  # pet ability
-        r"from ([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)('s| 's)": r"from \g<2>\g<3>",  # pet ability
+        rf"  ([{L}][{L} ]+[{L}]) \(([{L}]+)\)('s| 's) Arcane Missiles": r"  \g<2> 's Arcane Missiles (pet)",  # differentiate Remains trinket pet arcane missiles from caster's
+        rf"  ([{L}][{L} ]+[{L}]) \(([{L}]+)\)('s| 's)": r"  \g<2> 's",  # pet ability
+        rf"from ([{L}][{L} ]+[{L}]) \(([{L}]+)\)('s| 's)": r"from \g<2>\g<3>",  # pet ability
     }
 
     # You replacements have next priority
@@ -104,9 +107,9 @@ def replace_instances(player_name, filename):
         r" is afflicted by .*\)\.": r"\g<0>",  # some buffs/debuffs have 's in them, need to ignore these lines
 
         # handle 's at beginning of line by looking for [double space] [playername] [Capital letter]
-        r"  ([a-zA-Z'\- ]*?\S)'s ([A-Z])": r"  \g<1> 's \g<2>",
-        r"from ([a-zA-Z'\- ]*?\S)'s ([A-Z])": r"from \g<1> 's \g<2>",  # handle 's in middle of line by looking for 'from'
-        r"is immune to ([a-zA-Z'\- ]*?\S)'s ([A-Z])": r"is immune to \g<1> 's \g<2>",
+        rf"  ([{L}'\- ]*?\S)'s ([A-Z])": r"  \g<1> 's \g<2>",
+        rf"from ([{L}'\- ]*?\S)'s ([A-Z])": r"from \g<1> 's \g<2>",  # handle 's in middle of line by looking for 'from'
+        rf"is immune to ([{L}'\- ]*?\S)'s ([A-Z])": r"is immune to \g<1> 's \g<2>",
         # handle 's in middle of line by looking for 'is immune to'
         r"\)'s ([A-Z])": r") 's \g<1>",  # handle 's for pets
     }
@@ -115,8 +118,8 @@ def replace_instances(player_name, filename):
     # Only the first match will be replaced
     renames = {
         # convert totem spells to appear as though the shaman cast them so that player gets credit
-        r"  [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r"  \g<1> 's",
-        r" from [A-Z][a-zA-Z ]* Totem [IVX]+ \((.*?)\) 's": r" from \g<1> 's",
+        rf"  [A-Z][{L} ]* Totem [IVX]+ \((.*?)\) 's": r"  \g<1> 's",
+        rf" from [A-Z][{L} ]* Totem [IVX]+ \((.*?)\) 's": r" from \g<1> 's",
 
         r"Lightning Strike was resisted": r"Lightning Strike (nature) was resisted", # separate nature portion of Lightning Strike
         r"Lightning Strike (.*) Nature damage": r"Lightning Strike (nature) \g<1> Nature damage",  # separate nature portion of Lightning Strike
@@ -126,14 +129,14 @@ def replace_instances(player_name, filename):
     }
 
     friendly_fire = {
-        r"from ([a-zA-Z]*?) 's Power Overwhelming": r"from \g<1> (self damage) 's Power Overwhelming",
+        rf"from ([{L}]*?) 's Power Overwhelming": r"from \g<1> (self damage) 's Power Overwhelming",
         # power overwhelming causes owner to damage pet, shouldn't count as dps
     }
 
     # check for players hitting themselves
     self_damage = {
-        r"  ([a-zA-Z' ]*?) suffers (.*) (damage) from ([a-zA-Z' ]*?) 's": r"  \g<1> suffers \g<2> damage from \g<4> (self damage) 's",
-        r"  ([a-zA-Z' ]*?) 's (.*) (hits|crits) ([a-zA-Z' ]*?) for": r"  \g<1> (self damage) 's \g<2> \g<3> \g<4> for",
+        rf"  ([{L}' ]*?) suffers (.*) (damage) from ([{L}' ]*?) 's": r"  \g<1> suffers \g<2> damage from \g<4> (self damage) 's",
+        rf"  ([{L}' ]*?) 's (.*) (hits|crits) ([{L}' ]*?) for": r"  \g<1> (self damage) 's \g<2> \g<3> \g<4> for",
     }
 
     # add quantity 1 to loot messages without quantity
@@ -159,7 +162,7 @@ def replace_instances(player_name, filename):
 
     # associate common summoned pets with their owners as well
     summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling", "The Lost", "Minor Arcane Elemental", "Scytheclaw Pureborn", "Explosive Trap I", "Explosive Trap II", "Explosive Trap III"}
-    summoned_pet_owner_regex = r"([a-zA-Z][ a-zA-Z]+[a-zA-Z]) \(([a-zA-Z]+)\)"
+    summoned_pet_owner_regex = rf"([{L}][{L} ]+[{L}]) \(([{L}]+)\)"
 
     for i, _ in enumerate(lines):
         # DPSMate logs have " 's" already which will break some of our parsing, remove the space
