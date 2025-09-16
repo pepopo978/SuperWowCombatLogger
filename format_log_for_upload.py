@@ -158,7 +158,7 @@ def replace_instances(player_name, filename):
     pet_names = set()
     owner_names = set()
 
-    ignored_pet_names = {"Razorgore the Untamed", "Deathknight Understudy", "Naxxramas Worshipper"}
+    ignored_pet_names = {"Razorgore the Untamed (", "Deathknight Understudy (", "Naxxramas Worshipper ("}
 
     # associate common summoned pets with their owners as well
     summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling", "The Lost", "Minor Arcane Elemental", "Scytheclaw Pureborn", "Explosive Trap I", "Explosive Trap II", "Explosive Trap III"}
@@ -264,26 +264,26 @@ def create_zip_file(source_file, zip_filename):
                                                                                              arcname=os.path.basename(
                                                                                                  source_file))
 
+if __name__ == "__main__":
+    player_name = input("Enter player name: ")
+    filename = input("Enter filename (defaults to WoWCombatLog.txt if left empty): ")
+    if not filename.strip():
+        filename = 'WoWCombatLog.txt'
 
-player_name = input("Enter player name: ")
-filename = input("Enter filename (defaults to WoWCombatLog.txt if left empty): ")
-if not filename.strip():
-    filename = 'WoWCombatLog.txt'
+    create_zip = input("Create zip file (default y): ")
 
-create_zip = input("Create zip file (default y): ")
+    rename_file = input("Rename input file to TurtLog-{timestamp}.txt (default y): ")
 
-rename_file = input("Rename input file to TurtLog-{timestamp}.txt (default y): ")
+    replace_instances(player_name, filename)
 
-replace_instances(player_name, filename)
+    if not rename_file.strip() or rename_file.lower().startswith('y'):
+        # rename output file to TurtLog-YY-MM-DDTHH-MM.txt
+        timestamp = time.strftime("%Y-%m-%dT%H-%M")
+        new_filename = f"TurtLog-{timestamp}.txt"
+        os.rename(filename, new_filename)
+        filename = new_filename
 
-if not rename_file.strip() or rename_file.lower().startswith('y'):
-    # rename output file to TurtLog-YY-MM-DDTHH-MM.txt
-    timestamp = time.strftime("%Y-%m-%dT%H-%M")
-    new_filename = f"TurtLog-{timestamp}.txt"
-    os.rename(filename, new_filename)
-    filename = new_filename
-
-if not create_zip.strip() or create_zip.lower().startswith('y'):
-    create_zip_file(filename, filename + ".zip")
-print(
-    f"Messages with You/Your have been converted to {player_name}.  A backup of the original file has also been created.")
+    if not create_zip.strip() or create_zip.lower().startswith('y'):
+        create_zip_file(filename, filename + ".zip")
+    print(
+        f"Messages with You/Your have been converted to {player_name}.  A backup of the original file has also been created.")
