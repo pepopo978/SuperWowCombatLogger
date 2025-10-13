@@ -121,7 +121,7 @@ local trackedSpells = {
 	[1161] = "Challenging Shout",
 	[5209] = "Challenging Roar",
 	[51012] = "Jewel of Wild Magics",
-	[51143] = "Remains of Overwhelming Power",
+	--[51143] = "Remains of Overwhelming Power", already gets logged
 	[57667] = "Elunes Guardian",
 
 	[11722] = "Curse of the Elements", -- lock
@@ -159,6 +159,8 @@ local trackedSpells = {
 
 	[10157] = "Arcane Intellect", -- mage
 	[23028] = "Arcane Brilliance",
+
+	[56546] = "Highborne Insight",
 
 	[45511] = "Bloodlust", --shaman
 
