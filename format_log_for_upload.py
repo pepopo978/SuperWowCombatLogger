@@ -150,7 +150,7 @@ def replace_instances(player_name, filename):
     shutil.copyfile(filename, backup_filename)
 
     # Read the contents of the file
-    with open(filename, 'r', encoding='utf-8') as file:
+    with open(filename, 'r', encoding='utf-8', errors='replace') as file:
         lines = file.readlines()
 
     # collect pet names and change LOOT messages
