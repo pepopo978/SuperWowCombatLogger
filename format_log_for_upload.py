@@ -51,7 +51,6 @@ def replace_instances(player_name, filename):
     }
 
     # You replacements have next priority
-    # Only the first two matches will be replaced
     you_replacements = {
         r'.*You fail to cast.*\n': '',
         r'.*You fail to perform.*\n': '',
@@ -89,6 +88,7 @@ def replace_instances(player_name, filename):
         " You reflect": f" {player_name} reflects",
         " You receive": f" {player_name} receives",
         "&You receive": f"&{player_name} receives",
+        "&You won": f"&{player_name} won",
         " You deflect": f" {player_name} deflects",
         r"was dodged\.": f"was dodged by {player_name}.",  # SPELLDODGEDOTHERSELF=%s's %s was dodged.  No 'You'
         "causes you": f"causes {player_name}",
@@ -99,6 +99,7 @@ def replace_instances(player_name, filename):
         r"(\S)\syou\.": rf"\g<1> {player_name}.",  # non whitespace character followed by whitespace followed by you
         " You fall and lose": f" {player_name} falls and loses",
     }
+    # Only the first two matches will be replaced
 
     # Generic replacements have 2nd priority
     # Only the first match will be replaced
