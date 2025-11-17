@@ -74,6 +74,30 @@ local strjoin = string.join or function(delim, ...)
 	end
 end
 
+-- cache what we've seen, SpellInfo (while fairly speedy) is _5x_ slower than keeping a table
+local spellCache = {}
+
+-- some mobs have a 'target' but their spell cast doesn't mention one, we add them ourselves
+local specials = nil
+local specials_data = {
+	["Blackwing Lair"] = {
+		[22539] = "Shadow Flame", -- firemaw/ebonroc/flamegor/nefarian
+		[23308] = "Incinerate", -- chromag
+		[23310] = "Time Lapse", -- chromag
+		[23313] = "Corrosive Acid", -- chromag
+		[23315] = "Ignite Flesh", -- chromag
+		[23187] = "Frost Burn", -- chromag
+		[22334] = "Bomb" -- techies
+		-- [23461] = "Flame Breath", -- vael
+	},
+	["Onyxia's Lair"] = {
+		[18435] = "Flame Breath", -- onyxia
+	}
+	-- ["Tower of Karazhan"] = {
+		-- gnarlmoon lunar shift
+	-- }
+}
+
 local function strsplit(pString, pPattern)
 	local Table = {}
 	local fpat = "(.-)" .. pPattern
@@ -878,7 +902,80 @@ RPLL.PLAYER_REGEN_ENABLED = function()
 	logPlayersInCombat()
 end
 
-RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
+-- this is verbose but prevents allocating runtime strings each call
+local fmt_with_rank_target = "CAST: %s %s %s(%s)(%s) on %s."
+local fmt_with_rank = "CAST: %s %s %s(%s)(%s)."
+local fmt_with_target = "CAST: %s %s %s(%s) on %s."
+local fmt_simple = "CAST: %s %s %s(%s)."
+local fmt_raw_with_rank_target = "CAST: %s(%s) %s %s(%s)(%s) on %s(%s)."
+local fmt_raw_with_rank = "CAST: %s(%s) %s %s(%s)(%s)."
+local fmt_raw_with_target = "CAST: %s(%s) %s %s(%s) on %s(%s)."
+local fmt_raw_simple = "CAST: %s(%s) %s %s(%s)."
+
+local function LogCastEventV2(caster, target, event, spellID, castDuration)
+	if not (caster and spellID) then return end
+	if event == "MAINHAND" or event == "OFFHAND" then return end
+
+	-- cache lookup
+	local cachedSpell = spellCache[spellID]
+	local spell = cachedSpell and cachedSpell[1]
+	local rank = cachedSpell and cachedSpell[2]
+
+	if not spell then
+		-- Spell not cached yet? Call SpellInfo and cache the result.
+		spell,rank = SpellInfo(spellID)
+		if spell then
+			-- only cache Rank for things that have one. Some items have joke ranks!
+			rank = string.find(rank, "^Rank") and rank or ""
+			spellCache[spellID] = { spell, rank }
+		end
+	end
+
+	if not spell then return end
+
+	local targetName -- = UnitName(target) or "Unknown"
+	local casterName = UnitName(caster) or "Unknown"
+	if specials and specials[spellID] then
+		targetName = UnitName(caster.."target")
+	elseif target and target ~= "" then
+		targetName = UnitName(target) or "Unknown"
+	-- else
+		-- local t = UnitName(caster.."target")
+		-- targetName = t and (t.."(via targeting)")
+	end
+
+	local verb
+	if event == "START" then
+		verb = "begins to cast"
+	elseif event == "FAIL" then
+		verb = "fails casting"
+	elseif event == "CHANNEL" then
+		verb = "channels"
+	else -- event == "CAST"
+		verb = "casts"
+	end
+
+	if targetName then
+		if rank ~= "" then
+			CombatLogAdd(format(fmt_with_rank_target, casterName, verb, spell, spellID, rank, targetName))
+			CombatLogAdd(format(fmt_raw_with_rank_target, caster, casterName, verb, spell, spellID, rank, target, targetName), 1)
+		else
+			CombatLogAdd(format(fmt_with_target, casterName, verb, spell, spellID, targetName))
+			CombatLogAdd(format(fmt_raw_with_target, caster, casterName, verb, spell, spellID, target, targetName), 1)
+		end
+	else
+		if rank ~= "" then
+			CombatLogAdd(format(fmt_with_rank, casterName, verb, spell, spellID, rank))
+			CombatLogAdd(format(fmt_raw_with_rank, caster, casterName, verb, spell, spellID, rank), 1)
+		else
+			CombatLogAdd(format(fmt_simple, casterName, verb, spell, spellID))
+			CombatLogAdd(format(fmt_raw_simple, caster, casterName, verb, spell, spellID), 1)
+		end
+	end
+end
+
+-- kept for backwards compatibility with existing tools
+local function LogCastEventV1(caster, target, event, spellID, castDuration)
 	if not (trackedSpells[spellID] or trackedConsumes[spellID]) then
 		return
 	end
@@ -905,6 +1002,11 @@ RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
 	else
 		CombatLogAdd(casterName .. verb .. spell .. ".")
 	end
+end
+
+RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
+	LogCastEventV1(caster, target, event, spellID, castDuration) -- for backwards compatibility
+	LogCastEventV2(caster, target, event, spellID, castDuration)
 end
 
 RPLL.ZONE_CHANGED_NEW_AREA = function()
