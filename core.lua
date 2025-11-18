@@ -1252,6 +1252,12 @@ function RPLL:grab_unit_information(unit)
 			end
 		end
 
+		info["guid"] = "0x0"
+		local exists, guid = UnitExists(unit)
+		if exists and guid then
+			info["guid"] = guid
+		end
+
 		log_combatant_info(info)
 	end
 end
@@ -1277,7 +1283,7 @@ function log_combatant_info(character)
 			return
 		end
 
-		local result = prep_value(character["name"]) .. "&" .. prep_value(character["hero_class"]) .. "&" .. prep_value(character["race"]) .. "&" .. prep_value(character["sex"]) .. "&" .. prep_value(character["pet"]) .. "&" .. prep_value(character["guild_name"]) .. "&" .. prep_value(character["guild_rank_name"]) .. "&" .. prep_value(character["guild_rank_index"]) .. "&" .. gear_str .. "&" .. prep_value(character["talents"])
+		local result = prep_value(character["name"]) .. "&" .. prep_value(character["hero_class"]) .. "&" .. prep_value(character["race"]) .. "&" .. prep_value(character["sex"]) .. "&" .. prep_value(character["pet"]) .. "&" .. prep_value(character["guild_name"]) .. "&" .. prep_value(character["guild_rank_name"]) .. "&" .. prep_value(character["guild_rank_index"]) .. "&" .. gear_str .. "&" .. prep_value(character["talents"]) .. "&" .. prep_value(character["guid"])
 
 		if not RPLL.LoggedCombatantInfo[result] then
 			local result_prefix = "COMBATANT_INFO: " .. prep_value(character["last_update_date"]) .. "&"

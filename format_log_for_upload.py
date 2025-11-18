@@ -6,6 +6,56 @@ import shutil
 import time
 import zipfile
 
+# letter pattern including Unicode for unit names
+L = "a-zA-Z\\u00C0-\\u017F"
+
+def detect_player_names(lines):
+    """
+    Detect player names from COMBATANT_INFO lines with full talent info (2 '}' characters).
+    Returns a list of (timestamp, player_name) tuples sorted by timestamp.
+    """
+    player_entries = []
+
+    for line in lines:
+        if "COMBATANT_INFO" in line and line.count('}') == 2:
+            try:
+                # Extract timestamp from beginning of line
+                # Format: MM/DD HH:MM:SS.mmm
+                timestamp_match = re.match(r'(\d+/\d+\s+\d+:\d+:\d+\.\d+)', line)
+                if timestamp_match:
+                    timestamp = timestamp_match.group(1)
+
+                    # Extract player name from COMBATANT_INFO
+                    line_parts = line.split("&")
+                    player_name = line_parts[1]
+
+                    player_entries.append((timestamp, player_name))
+            except Exception as e:
+                print(f"Error parsing player name from COMBATANT_INFO: {line}")
+                print(e)
+
+    return player_entries
+
+
+def get_player_name_for_timestamp(timestamp, player_entries):
+    """
+    Get the appropriate player name for a given timestamp.
+    Returns the player name from the most recent COMBATANT_INFO before this timestamp.
+    """
+    if not player_entries:
+        return None
+
+    # Find the most recent player entry that is at or before this timestamp
+    current_player = player_entries[0][1]  # Default to first player
+
+    for entry_timestamp, player_name in player_entries:
+        if entry_timestamp <= timestamp:
+            current_player = player_name
+        else:
+            break
+
+    return current_player
+
 
 def handle_replacements(line, replacements):
     for pattern, replacement in replacements.items():
@@ -21,36 +71,13 @@ def handle_replacements(line, replacements):
     return line
 
 
-def replace_instances(player_name, filename):
+def build_replacement_dicts(player_name):
+    """
+    Build all replacement dictionaries for a given player name.
+    Returns a dict containing all the replacement dictionaries.
+    """
     player_name = player_name.strip().capitalize()
-    
-    # letter pattern including Unicode for unit names
-    L = "a-zA-Z\\u00C0-\\u017F"
 
-    # Mob names with apostrophes have top priority
-    # only the first match will be replaced
-    mob_names_with_apostrophe = {
-        "Onyxia's Elite Guard": "Onyxias Elite Guard",
-        "Sartura's Royal Guard": "Sarturas Royal Guard",
-        "Medivh's Merlot Blue Label": "Medivhs Merlot Blue Label",
-        "Ima'ghaol, Herald of Desolation": "Imaghaol, Herald of Desolation",
-    }
-
-    # Pet renames have next priority
-    pet_rename_replacements = {}
-
-    # Pet replacements have next priority
-    # only the first match will be replaced
-    pet_replacements = {
-        rf"  ([{L}][{L} ]+[{L}]) \(([{L}]+)\) (hits|crits|misses)": r"  \g<2>'s Auto Attack (pet) \g<3>",
-        rf"  Your ([{L}][{L} ]+[{L}]) \(([{L}]+)\) is dismissed.": r"  \g<2>'s \g<1> (\g<2>) is dismissed.",
-        # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
-        rf"  ([{L}][{L} ]+[{L}]) \(([{L}]+)\)('s| 's) Arcane Missiles": r"  \g<2> 's Arcane Missiles (pet)",  # differentiate Remains trinket pet arcane missiles from caster's
-        rf"  ([{L}][{L} ]+[{L}]) \(([{L}]+)\)('s| 's)": r"  \g<2> 's",  # pet ability
-        rf"from ([{L}][{L} ]+[{L}]) \(([{L}]+)\)('s| 's)": r"from \g<2>\g<3>",  # pet ability
-    }
-
-    # You replacements have next priority
     you_replacements = {
         r'.*You fail to cast.*\n': '',
         r'.*You fail to perform.*\n': '',
@@ -87,8 +114,7 @@ def replace_instances(player_name, filename):
         " You absorb": f" {player_name} absorbs",
         " You reflect": f" {player_name} reflects",
         " You receive": f" {player_name} receives",
-        "&You receive": f"&{player_name} receives",
-        "&You won": f"&{player_name} won",
+        "&You": f"&{player_name}",
         " You deflect": f" {player_name} deflects",
         r"was dodged\.": f"was dodged by {player_name}.",  # SPELLDODGEDOTHERSELF=%s's %s was dodged.  No 'You'
         "causes you": f"causes {player_name}",
@@ -99,7 +125,47 @@ def replace_instances(player_name, filename):
         r"(\S)\syou\.": rf"\g<1> {player_name}.",  # non whitespace character followed by whitespace followed by you
         " You fall and lose": f" {player_name} falls and loses",
     }
-    # Only the first two matches will be replaced
+
+    return you_replacements
+
+
+def replace_instances(player_entries, filename):
+    # Build replacement dictionaries for each unique player name
+    unique_player_names = set(name for _, name in player_entries)
+    player_replacement_dicts = {}
+    for player_name in unique_player_names:
+        player_replacement_dicts[player_name] = build_replacement_dicts(player_name)
+
+    # If no player entries detected, fall back to prompting user
+    if not player_entries:
+        player_name = input("No player detected from COMBATANT_INFO. Enter player name: ")
+        player_name = player_name.strip().capitalize()
+        player_replacement_dicts[player_name] = build_replacement_dicts(player_name)
+        # Create a single entry for all timestamps
+        player_entries = [("00/00 00:00:00.000", player_name)]
+
+    # Mob names with apostrophes have top priority
+    # only the first match will be replaced
+    mob_names_with_apostrophe = {
+        "Onyxia's Elite Guard": "Onyxias Elite Guard",
+        "Sartura's Royal Guard": "Sarturas Royal Guard",
+        "Medivh's Merlot Blue Label": "Medivhs Merlot Blue Label",
+        "Ima'ghaol, Herald of Desolation": "Imaghaol, Herald of Desolation",
+    }
+
+    # Pet renames have next priority
+    pet_rename_replacements = {}
+
+    # Pet replacements have next priority
+    # only the first match will be replaced
+    pet_replacements = {
+        rf"  ([{L}][{L} ]+[{L}]) \(([{L}]+)\) (hits|crits|misses)": r"  \g<2>'s Auto Attack (pet) \g<3>",
+        rf"  Your ([{L}][{L} ]+[{L}]) \(([{L}]+)\) is dismissed.": r"  \g<2>'s \g<1> (\g<2>) is dismissed.",
+        # convert pet hits/crits/misses to spell 'Pet Summoned' on the hunter
+        rf"  ([{L}][{L} ]+[{L}]) \(([{L}]+)\)('s| 's) Arcane Missiles": r"  \g<2> 's Arcane Missiles (pet)",  # differentiate Remains trinket pet arcane missiles from caster's
+        rf"  ([{L}][{L} ]+[{L}]) \(([{L}]+)\)('s| 's)": r"  \g<2> 's",  # pet ability
+        rf"from ([{L}][{L} ]+[{L}]) \(([{L}]+)\)('s| 's)": r"from \g<2>\g<3>",  # pet ability
+    }
 
     # Generic replacements have 2nd priority
     # Only the first match will be replaced
@@ -231,9 +297,16 @@ def replace_instances(player_name, filename):
 
         # if line contains you/You
         if "you" in lines[i] or "You" in lines[i] or "dodged." in lines[i]:
-            lines[i] = handle_replacements(lines[i], you_replacements)
-            lines[i] = handle_replacements(lines[i],
-                                           you_replacements)  # when casting ability on yourself need to do two replacements
+            # Extract timestamp from line to determine which player name to use
+            timestamp_match = re.match(r'(\d+/\d+\s+\d+:\d+:\d+\.\d+)', lines[i])
+            if timestamp_match:
+                line_timestamp = timestamp_match.group(1)
+                current_player_name = get_player_name_for_timestamp(line_timestamp, player_entries)
+                if current_player_name and current_player_name in player_replacement_dicts:
+                    you_replacements = player_replacement_dicts[current_player_name]
+                    lines[i] = handle_replacements(lines[i], you_replacements)
+                    lines[i] = handle_replacements(lines[i],
+                                                   you_replacements)  # when casting ability on yourself need to do two replacements
 
         # generic replacements
         lines[i] = handle_replacements(lines[i], generic_replacements)
@@ -267,7 +340,6 @@ def create_zip_file(source_file, zip_filename):
                                                                                                  source_file))
 
 if __name__ == "__main__":
-    player_name = input("Enter player name: ")
     filename = input("Enter filename (defaults to WoWCombatLog.txt if left empty): ")
     if not filename.strip():
         filename = 'WoWCombatLog.txt'
@@ -276,7 +348,20 @@ if __name__ == "__main__":
 
     rename_file = input("Rename input file to TurtLog-{timestamp}.txt (default y): ")
 
-    replace_instances(player_name, filename)
+    # Read file to detect player names from COMBATANT_INFO
+    print("Detecting player name(s) from COMBATANT_INFO...")
+    with open(filename, 'r', encoding='utf-8', errors='replace') as file:
+        lines = file.readlines()
+
+    player_entries = detect_player_names(lines)
+
+    if player_entries:
+        unique_players = list(set(name for _, name in player_entries))
+        print(f"Detected player(s) for you: {', '.join(unique_players)}")
+    else:
+        print("No player detected from COMBATANT_INFO with full talent information.  This is needed to determine which player 'You' refers to at different timestamps in the log.")
+
+    replace_instances(player_entries, filename)
 
     if not rename_file.strip() or rename_file.lower().startswith('y'):
         # rename output file to TurtLog-YY-MM-DDTHH-MM.txt
@@ -287,5 +372,11 @@ if __name__ == "__main__":
 
     if not create_zip.strip() or create_zip.lower().startswith('y'):
         create_zip_file(filename, filename + ".zip")
-    print(
-        f"Messages with You/Your have been converted to {player_name}.  A backup of the original file has also been created.")
+
+    if player_entries:
+        unique_players = list(set(name for _, name in player_entries))
+        player_names_str = ', '.join(unique_players)
+        print(
+            f"Messages with You/Your have been converted to {player_names_str}.  A backup of the original file has also been created.")
+    else:
+        print("File processing complete. A backup of the original file has also been created.")
