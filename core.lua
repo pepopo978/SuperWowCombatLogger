@@ -1167,6 +1167,8 @@ function RPLL:grab_unit_information(unit)
 		local exists, guid = UnitExists(unit)
 		if exists then
 			info["guid"] = guid
+			-- A convoluted way to convert `1 -> 1` and `nil -> 0`
+			info["self"] = UnitIsUnit("target", "player") == 1 and 1 or 0
 		end
 
 		-- Guild info
@@ -1285,7 +1287,7 @@ function log_combatant_info(character)
 		local result = prep_value(character["name"]) .. "&" .. prep_value(character["hero_class"]) .. "&" .. prep_value(character["race"]) .. "&" .. prep_value(character["sex"]) .. "&" .. prep_value(character["pet"]) .. "&" .. prep_value(character["guild_name"]) .. "&" .. prep_value(character["guild_rank_name"]) .. "&" .. prep_value(character["guild_rank_index"]) .. "&" .. gear_str .. "&" .. prep_value(character["talents"])
 
 		if character["guid"] ~= nil then
-			CombatLogAdd("COMBATANT_GUID: " .. prep_value(character["last_update_date"]) .. "&" .. prep_value(character["name"]) .. "&" .. prep_value(character["guid"]))
+			CombatLogAdd("COMBATANT_GUID: " .. prep_value(character["last_update_date"]) .. "&" .. prep_value(character["name"]) .. "&" .. prep_value(character["self"]) .. "&" .. prep_value(character["guid"]))
 		end
 
 		if not RPLL.LoggedCombatantInfo[result] then
