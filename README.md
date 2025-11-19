@@ -15,7 +15,7 @@ In order to upload your logs to monkeylogs/turtlogs you need to run `format_log_
 Copy `format_log_for_upload.py` and `run_format_log.bat`(windows) or `run_format_log.sh`(mac/linux) to the same directory as your WowCombatLog.txt and double click the appropriate `run_format_log` file.
 You can also run the python script directly in a terminal in that directory with `python format_log_for_upload.py`. 
 
-Fill in your player name and the name of your log file when prompted, update a zip containing the formatted log to monkey/turtlogs.
+Fill in the name of your log file when prompted or use the defaults, then upload a zip containing the formatted log to monkey/turtlogs.  It now automatically determines your player name.
 
 # Changes from AdvancedVanillaCombatLog
 - No longer requires any raiders to run the AdvancedVanillaCombatLog_Helper addon.
