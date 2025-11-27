@@ -1175,16 +1175,25 @@ function RPLL:grab_unit_information(unit)
 		-- Pet name
 		if strfind(unit, "pet") == nil then
 			local pet_name = nil
+			local pet_guid = nil
 			if unit == "player" then
 				pet_name = UnitName("pet")
+				_, pet_guid = UnitExists("pet")
 			elseif strfind(unit, "raid") then
-				pet_name = UnitName("raidpet" .. strsub(unit, 5))
+				local str = "raidpet" .. strsub(unit, 5)
+				pet_name = UnitName(str)
+				_, pet_guid = UnitExists(str)
 			elseif strfind(unit, "party") then
-				pet_name = UnitName("partypet" .. strsub(unit, 6))
+				local str = "partypet" .. strsub(unit, 6)
+				pet_name = UnitName(str)
+				_, pet_guid = UnitExists(str)
 			end
 
-			if pet_name ~= nil and pet_name ~= Unknown and pet ~= "" then
+			if pet_name ~= nil and pet_name ~= Unknown then
 				info["pet"] = pet_name
+			end
+			if pet_guid then
+				info["pet_guid"] = pet_guid
 			end
 		end
 
@@ -1283,7 +1292,18 @@ function log_combatant_info(character)
 			return
 		end
 
-		local result = prep_value(character["name"]) .. "&" .. prep_value(character["hero_class"]) .. "&" .. prep_value(character["race"]) .. "&" .. prep_value(character["sex"]) .. "&" .. prep_value(character["pet"]) .. "&" .. prep_value(character["guild_name"]) .. "&" .. prep_value(character["guild_rank_name"]) .. "&" .. prep_value(character["guild_rank_index"]) .. "&" .. gear_str .. "&" .. prep_value(character["talents"]) .. "&" .. prep_value(character["guid"])
+		local result = prep_value(character["name"]) .. "&"
+				.. prep_value(character["hero_class"]) .. "&"
+				.. prep_value(character["race"]) .. "&"
+				.. prep_value(character["sex"]) .. "&"
+				.. prep_value(character["pet"]) .. "&"
+				.. prep_value(character["guild_name"]) .. "&"
+				.. prep_value(character["guild_rank_name"]) .. "&"
+				.. prep_value(character["guild_rank_index"]) .. "&"
+				.. gear_str .. "&"
+				.. prep_value(character["talents"]) .. "&"
+				.. prep_value(character["guid"]) .. "&"
+				.. prep_value(character["pet_guid"])
 
 		if not RPLL.LoggedCombatantInfo[result] then
 			local result_prefix = "COMBATANT_INFO: " .. prep_value(character["last_update_date"]) .. "&"
