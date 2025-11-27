@@ -933,15 +933,22 @@ local function LogCastEventV2(caster, target, event, spellID, castDuration)
 
 	if not spell then return end
 
-	local targetName -- = UnitName(target) or "Unknown"
 	local casterName = UnitName(caster) or "Unknown"
+
+	local casterOwnerName = UnitName(caster .. "owner")
+	if casterOwnerName and casterOwnerName ~= casterName then
+		casterName = casterName .. " (" .. casterOwnerName .. ")"
+	end
+
+	local targetName
 	if specials and specials[spellID] then
 		targetName = UnitName(caster.."target")
 	elseif target and target ~= "" then
 		targetName = UnitName(target) or "Unknown"
-	-- else
-		-- local t = UnitName(caster.."target")
-		-- targetName = t and (t.."(via targeting)")
+	end
+	local targetOwnerName = UnitName(target .. "owner")
+	if targetOwnerName and targetOwnerName ~= targetName then
+		targetName = targetName .. " (" .. targetOwnerName .. ")"
 	end
 
 	local verb
