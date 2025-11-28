@@ -7,7 +7,7 @@ import time
 import zipfile
 
 # letter pattern including Unicode for unit names
-L = "a-zA-Z\\u00C0-\\u017F"
+L = ",a-zA-Z\\u00C0-\\u017F"
 
 def detect_player_names(lines):
     """
