@@ -229,7 +229,7 @@ def replace_instances(player_entries, filename):
     ignored_pet_names = {"Razorgore the Untamed (", "Deathknight Understudy (", "Naxxramas Worshipper ("}
 
     # associate common summoned pets with their owners as well
-    summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling", "The Lost", "Minor Arcane Elemental", "Scytheclaw Pureborn", "Explosive Trap I", "Explosive Trap II", "Explosive Trap III", "Sproutling"}
+    summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling", "The Lost", "Minor Arcane Elemental", "Scytheclaw Pureborn", "Explosive Trap I", "Explosive Trap II", "Explosive Trap III", "Sproutling", "Spirit Protector"}
     summoned_pet_owner_regex = rf"([{L}][{L} ]+[{L}]) \(([{L}]+)\)"
 
     for i, _ in enumerate(lines):
