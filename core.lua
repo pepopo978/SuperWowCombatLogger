@@ -46,6 +46,8 @@ RPLL:RegisterEvent("UNIT_CASTEVENT")
 RPLL:RegisterEvent("PLAYER_REGEN_DISABLED")
 RPLL:RegisterEvent("PLAYER_REGEN_ENABLED")
 
+RPLL:RegisterEvent("UNIT_DIED")
+
 local tinsert = table.insert
 local UnitName = UnitName
 local strsub = string.sub
@@ -895,11 +897,18 @@ RPLL:SetScript("OnUpdate", function()
 end)
 
 RPLL.PLAYER_REGEN_DISABLED = function()
+	CombatLogAdd("PLAYER_REGEN_DISABLED")
 	logPlayersInCombat()
 end
 
 RPLL.PLAYER_REGEN_ENABLED = function()
+	CombatLogAdd("PLAYER_REGEN_ENABLED")
 	logPlayersInCombat()
+end
+
+RPLL.UNIT_DIED = function(guid)
+	local name = UnitName(guid) or "Unknown"
+	CombatLogAdd("UNIT_DIED:" .. name .. ":" .. guid)
 end
 
 -- this is verbose but prevents allocating runtime strings each call
@@ -907,10 +916,6 @@ local fmt_with_rank_target = "CAST: %s %s %s(%s)(%s) on %s."
 local fmt_with_rank = "CAST: %s %s %s(%s)(%s)."
 local fmt_with_target = "CAST: %s %s %s(%s) on %s."
 local fmt_simple = "CAST: %s %s %s(%s)."
-local fmt_raw_with_rank_target = "CAST: %s(%s) %s %s(%s)(%s) on %s(%s)."
-local fmt_raw_with_rank = "CAST: %s(%s) %s %s(%s)(%s)."
-local fmt_raw_with_target = "CAST: %s(%s) %s %s(%s) on %s(%s)."
-local fmt_raw_simple = "CAST: %s(%s) %s %s(%s)."
 
 local function LogCastEventV2(caster, target, event, spellID, castDuration)
 	if not (caster and spellID) then return end
@@ -958,18 +963,14 @@ local function LogCastEventV2(caster, target, event, spellID, castDuration)
 	if targetName then
 		if rank ~= "" then
 			CombatLogAdd(format(fmt_with_rank_target, casterName, verb, spell, spellID, rank, targetName))
-			CombatLogAdd(format(fmt_raw_with_rank_target, caster, casterName, verb, spell, spellID, rank, target, targetName), 1)
 		else
 			CombatLogAdd(format(fmt_with_target, casterName, verb, spell, spellID, targetName))
-			CombatLogAdd(format(fmt_raw_with_target, caster, casterName, verb, spell, spellID, target, targetName), 1)
 		end
 	else
 		if rank ~= "" then
 			CombatLogAdd(format(fmt_with_rank, casterName, verb, spell, spellID, rank))
-			CombatLogAdd(format(fmt_raw_with_rank, caster, casterName, verb, spell, spellID, rank), 1)
 		else
 			CombatLogAdd(format(fmt_simple, casterName, verb, spell, spellID))
-			CombatLogAdd(format(fmt_raw_simple, caster, casterName, verb, spell, spellID), 1)
 		end
 	end
 end
