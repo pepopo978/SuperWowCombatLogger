@@ -114,6 +114,7 @@ def build_replacement_dicts(player_name):
         " You absorb": f" {player_name} absorbs",
         " You reflect": f" {player_name} reflects",
         " You receive": f" {player_name} receives",
+        "&You receive": f"&{player_name} receives",
         "&You": f"&{player_name}",
         " You deflect": f" {player_name} deflects",
         r"was dodged\.": f"was dodged by {player_name}.",  # SPELLDODGEDOTHERSELF=%s's %s was dodged.  No 'You'
