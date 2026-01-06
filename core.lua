@@ -1040,17 +1040,8 @@ RPLL.PLAYER_ENTERING_WORLD = function()
 	AURAADDEDSELFHARMFUL = "You are afflicted by %s (1)."
 	AURAADDEDSELFHELPFUL = "You gain %s (1)."
 
-	if RPLL_PlayerInformation == nil then
-		RPLL_PlayerInformation = {}
-	end
-	this.PlayerInformation = RPLL_PlayerInformation
-
-	-- look for players that haven't been updated in > 1 month and remove them
-	for name, info in pairs(this.PlayerInformation) do
-		if info["last_update"] and time() - info["last_update"] > 2592000 then -- 30 days
-			this.PlayerInformation[name] = nil
-		end
-	end
+  -- Rate limiting cache for player info scanning (timestamps only, session-only)
+  this.PlayerInformation = {}
 
 	this:grab_unit_information("player")
 	this:RAID_ROSTER_UPDATE()
@@ -1154,15 +1145,15 @@ end
 function RPLL:grab_unit_information(unit)
 	local unit_name = UnitName(unit)
 	if UnitIsPlayer(unit) and unit_name ~= nil and unit_name ~= Unknown then
-		if this.PlayerInformation[unit_name] == nil then
-			this.PlayerInformation[unit_name] = {}
-		end
-		local info = this.PlayerInformation[unit_name]
-		if info["last_update"] ~= nil and time() - info["last_update"] <= 30 then
+    -- Check rate limiting using simple timestamp cache
+    local last_update = this.PlayerInformation[unit_name]
+    if last_update ~= nil and time() - last_update <= 30 then
 			return
 		end
+
+    -- Gather all info into local table
+    local info = {}
 		info["last_update_date"] = date("%d.%m.%y %H:%M:%S")
-		info["last_update"] = time()
 		info["name"] = unit_name
 
 		-- Guild info
@@ -1220,12 +1211,8 @@ function RPLL:grab_unit_information(unit)
 			end
 		end
 
-		if info["gear"] == nil then
-			info["gear"] = {}
-		end
-
+    info["gear"] = {}
 		if any_item then
-			info["gear"] = {}
 			for i = 1, 19 do
 				local inv_link = GetInventoryItemLink(unit, i)
 				if inv_link == nil then
@@ -1267,6 +1254,9 @@ function RPLL:grab_unit_information(unit)
 		if exists and guid then
 			info["guid"] = guid
 		end
+
+    -- Update timestamp cache
+    this.PlayerInformation[unit_name] = time()
 
 		log_combatant_info(info)
 	end
