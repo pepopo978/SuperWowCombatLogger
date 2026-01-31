@@ -47,6 +47,7 @@ RPLL:RegisterEvent("PLAYER_REGEN_DISABLED")
 RPLL:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 RPLL:RegisterEvent("UNIT_DIED")
+RPLL:RegisterEvent("PLAYER_LOGOUT")
 
 local tinsert = table.insert
 local UnitName = UnitName
@@ -887,7 +888,13 @@ local function logPlayersInCombat()
 	end
 end
 
+-- Shutdown flag to prevent processing during logout
+RPLL.isShuttingDown = false
+
 RPLL:SetScript("OnUpdate", function()
+	-- Stop processing during shutdown to prevent crash 132
+	if RPLL.isShuttingDown then return end
+
 	if (this.limit or 1) > GetTime() then
 		return
 	else
@@ -895,6 +902,28 @@ RPLL:SetScript("OnUpdate", function()
 	end
 	logPlayersInCombat()
 end)
+
+-- Handle PLAYER_LOGOUT to prevent crash 132 during shutdown
+RPLL.PLAYER_LOGOUT = function()
+	-- Set shutdown flag immediately to stop OnUpdate processing
+	RPLL.isShuttingDown = true
+
+	-- Unregister all events first
+	this:UnregisterAllEvents()
+
+	-- Clear scripts
+	this:SetScript("OnUpdate", nil)
+	this:SetScript("OnEvent", nil)
+
+	-- Clear caches to prevent stale data
+	for k in pairs(spellCache) do spellCache[k] = nil end
+	if this.PlayerInformation then
+		for k in pairs(this.PlayerInformation) do this.PlayerInformation[k] = nil end
+	end
+	if RPLL.LoggedCombatantInfo then
+		for k in pairs(RPLL.LoggedCombatantInfo) do RPLL.LoggedCombatantInfo[k] = nil end
+	end
+end
 
 RPLL.PLAYER_REGEN_DISABLED = function()
 	CombatLogAdd("PLAYER_REGEN_DISABLED")
