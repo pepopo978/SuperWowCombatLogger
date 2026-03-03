@@ -885,6 +885,7 @@ local function logPlayersInCombat()
 		RPLL.NUM_PLAYERS_IN_COMBAT = currentPlayersInCombat
 		CombatLogAdd("PLAYERS_IN_COMBAT: " .. tostring(currentPlayersInCombat) .. "/" .. tostring(totalPlayers))
 	end
+
 end
 
 RPLL:SetScript("OnUpdate", function()
@@ -894,6 +895,11 @@ RPLL:SetScript("OnUpdate", function()
 		this.limit = GetTime() + 15 -- update combat state every 15 seconds in case logger isn't involved in the fight
 	end
 	logPlayersInCombat()
+
+  -- flush combat log if available and not in combat
+  if CombatLogFlush and not UnitAffectingCombat("player") then
+    CombatLogFlush()
+  end
 end)
 
 RPLL.PLAYER_REGEN_DISABLED = function()
@@ -904,6 +910,11 @@ end
 RPLL.PLAYER_REGEN_ENABLED = function()
 	CombatLogAdd("PLAYER_REGEN_ENABLED")
 	logPlayersInCombat()
+
+  -- flush combat log if available
+  if CombatLogFlush then
+    CombatLogFlush()
+  end
 end
 
 RPLL.UNIT_DIED = function(guid)
