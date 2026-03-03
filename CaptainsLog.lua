@@ -16,6 +16,7 @@ local sessionZone = nil
 local LoggingCombat = LoggingCombat
 local GetRealZoneText = GetRealZoneText
 local IsInInstance = IsInInstance
+local UnitAffectingCombat = UnitAffectingCombat
 local GetGameTime = GetGameTime
 local unpack = unpack or table.unpack
 local date = date
@@ -185,10 +186,28 @@ local RAID_ZONE_NAMES = {
     "Tower of Karazhan",
 }
 
+local RAID_ZONE_ALIASES = {
+    -- AQ names vary by client/build; map known variants to canonical labels.
+    ["Ahn'Qiraj Temple"] = "Temple of Ahn'Qiraj",
+    ["Ahn Qiraj Temple"] = "Temple of Ahn'Qiraj",
+    ["Temple of Ahn Qiraj"] = "Temple of Ahn'Qiraj",
+    ["Ahn'Qiraj"] = "Temple of Ahn'Qiraj",
+    ["Ahn Qiraj"] = "Temple of Ahn'Qiraj",
+    ["Ahn'Qiraj Ruins"] = "Ruins of Ahn'Qiraj",
+    ["Ahn Qiraj Ruins"] = "Ruins of Ahn'Qiraj",
+    ["Ruins of Ahn Qiraj"] = "Ruins of Ahn'Qiraj",
+}
+
 local RAID_ZONES = {}
 for _, zoneName in ipairs(RAID_ZONE_NAMES) do
     local zoneKey = NormalizeZoneName(zoneName)
     RAID_ZONES[zoneKey] = zoneName
+end
+for aliasName, canonicalName in pairs(RAID_ZONE_ALIASES) do
+    local aliasKey = NormalizeZoneName(aliasName)
+    if aliasKey then
+        RAID_ZONES[aliasKey] = canonicalName
+    end
 end
 
 StartLogging = function(zone, mode, reason)
@@ -328,6 +347,14 @@ local function OnCombatEnd()
     local total = GetNumRaidMembers()
     if total == 0 then
         return
+    end
+
+    if UnitAffectingCombat then
+        for i = 1, total do
+            if UnitAffectingCombat("raid" .. i) then
+                return
+            end
+        end
     end
 
     local alive = 0

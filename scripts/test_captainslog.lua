@@ -78,16 +78,19 @@ local function newHarness(zoneProvider, opts)
             table.insert(chatLines, msg)
         end
     }
-    _G.GetNumRaidMembers = function()
+    _G.GetNumRaidMembers = opts.getNumRaidMembers or function()
         return 0
     end
-    _G.GetRaidRosterInfo = function()
+    _G.GetRaidRosterInfo = opts.getRaidRosterInfo or function()
         return nil
     end
-    _G.UnitIsDeadOrGhost = function()
+    _G.UnitIsDeadOrGhost = opts.unitIsDeadOrGhost or function()
         return false
     end
-    _G.UnitName = function(unit)
+    _G.UnitAffectingCombat = opts.unitAffectingCombat or function()
+        return false
+    end
+    _G.UnitName = opts.unitName or function(unit)
         return unit
     end
     _G.AceLibrary = opts.aceLibrary
@@ -165,6 +168,30 @@ local function testNormalizesWhitespaceAndApostrophes()
     assertTrue(containsPrefix(ctx.combatLogLines, "SESSION_START: Onyxia's Lair "), "expected normalized SESSION_START marker")
 end
 
+local function testRecognizesAq40AliasZoneName()
+    local zone = "Ahn'Qiraj Temple"
+    local ctx = newHarness(function()
+        return zone
+    end)
+
+    dispatch(ctx, "ZONE_CHANGED_NEW_AREA")
+
+    assertTrue(containsValue(ctx.loggingCalls, 1), "expected LoggingCombat(1) for AQ40 alias zone")
+    assertTrue(containsPrefix(ctx.combatLogLines, "SESSION_START: Temple of Ahn'Qiraj "), "expected SESSION_START marker for AQ40 alias")
+end
+
+local function testRecognizesAhnQirajZoneName()
+    local zone = "Ahn'Qiraj"
+    local ctx = newHarness(function()
+        return zone
+    end)
+
+    dispatch(ctx, "ZONE_CHANGED_NEW_AREA")
+
+    assertTrue(containsValue(ctx.loggingCalls, 1), "expected LoggingCombat(1) for Ahn'Qiraj zone name")
+    assertTrue(containsPrefix(ctx.combatLogLines, "SESSION_START: Temple of Ahn'Qiraj "), "expected SESSION_START marker for Ahn'Qiraj zone name")
+end
+
 local function testManualLockPreventsAutoStopOnUnknownZone()
     local zone = "Localized Raid Name"
     local ctx = newHarness(function()
@@ -192,6 +219,48 @@ local function testManagedSessionReenablesLoggingIfTurnedOffExternally()
     assertTrue(containsValue(ctx.loggingCalls, 0), "expected external LoggingCombat(0) toggle to be recorded")
     assertTrue(lastValue(ctx.loggingCalls) == 1, "expected addon to re-enable logging for active session")
     assertTrue(ctx.getLoggingEnabled(), "expected combat logging state to end enabled")
+end
+
+local function testDoesNotEmitCombatEndWhenRaidMembersStillInCombat()
+    local zone = "Zul'Gurub"
+    local inCombat = {
+        raid2 = true,
+    }
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        getNumRaidMembers = function()
+            return 3
+        end,
+        unitAffectingCombat = function(unit)
+            return inCombat[unit] and 1 or nil
+        end,
+    })
+
+    dispatch(ctx, "ZONE_CHANGED_NEW_AREA")
+    dispatch(ctx, "PLAYER_REGEN_ENABLED")
+
+    assertTrue(not containsPrefix(ctx.combatLogLines, "COMBAT_END: "), "did not expect COMBAT_END while raid members remain in combat")
+    assertTrue(not containsPrefix(ctx.combatLogLines, "WIPE: "), "did not expect WIPE while raid members remain in combat")
+end
+
+local function testEmitsCombatEndWhenRaidLeavesCombat()
+    local zone = "Zul'Gurub"
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        getNumRaidMembers = function()
+            return 3
+        end,
+        unitAffectingCombat = function()
+            return nil
+        end,
+    })
+
+    dispatch(ctx, "ZONE_CHANGED_NEW_AREA")
+    dispatch(ctx, "PLAYER_REGEN_ENABLED")
+
+    assertTrue(containsPrefix(ctx.combatLogLines, "COMBAT_END: "), "expected COMBAT_END when raid is out of combat")
 end
 
 local function testAutoSessionSwitchesWhenRaidZoneChanges()
@@ -433,8 +502,12 @@ end
 
 testRecoversWhenInitialZoneIsEmpty()
 testNormalizesWhitespaceAndApostrophes()
+testRecognizesAq40AliasZoneName()
+testRecognizesAhnQirajZoneName()
 testManualLockPreventsAutoStopOnUnknownZone()
 testManagedSessionReenablesLoggingIfTurnedOffExternally()
+testDoesNotEmitCombatEndWhenRaidMembersStillInCombat()
+testEmitsCombatEndWhenRaidLeavesCombat()
 testAutoSessionSwitchesWhenRaidZoneChanges()
 testStatusCommandReportsModeZoneAndLogging()
 testSessionTransitionMarkersIncludeReasons()
