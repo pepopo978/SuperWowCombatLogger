@@ -73,6 +73,9 @@ local function newHarness(zoneProvider, opts)
     _G.GetGameTime = opts.getGameTime or function()
         return 20, 0
     end
+    _G.GetTime = opts.getTime or function()
+        return 0
+    end
     _G.DEFAULT_CHAT_FRAME = {
         AddMessage = function(_, msg)
             table.insert(chatLines, msg)
@@ -483,6 +486,223 @@ local function testBigWigsEncounterCanStartSessionWhenIdle()
     assertTrue(containsPrefix(ctx.combatLogLines, "ENCOUNTER_START: Echo of Medivh "), "expected encounter marker from BigWigs")
 end
 
+local function testSuppressesBugTrioPrePullWipeNoise()
+    local zone = "Temple of Ahn'Qiraj"
+    local now = 0
+    local playerInCombat = false
+    local registrations = {}
+    local aceLibrary, aceEvent = makeAceLibraryStub(registrations)
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        aceLibrary = aceLibrary,
+        getTime = function()
+            return now
+        end,
+        unitAffectingCombat = function(unit)
+            if unit == "player" and playerInCombat then
+                return 1
+            end
+            return nil
+        end,
+    })
+
+    dispatch(ctx, "ADDON_LOADED", "BigWigs")
+    local handler = aceEvent.embeddedTarget
+
+    handler:BigWigs_RecvSync("BossEngaged", "The Bug Family", "Test")
+    now = 27
+    handler:BigWigs_RebootModule("BugTrio")
+
+    now = 77
+    handler:BigWigs_RecvSync("BossEngaged", "Princess Yauj", "Test")
+    playerInCombat = true
+    dispatch(ctx, "PLAYER_REGEN_DISABLED")
+    now = 179
+    handler:BigWigs_RecvSync("BossDeath", "Vem", "Test")
+
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_START: The Bug Family ") == 1, "expected one Bug Trio start marker")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: WIPE The Bug Family ") == 0, "did not expect Bug Trio wipe noise")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: KILL The Bug Family ") == 1, "expected one Bug Trio kill marker")
+end
+
+local function testSuppressesDuplicateBugTrioKillMarkers()
+    local zone = "Temple of Ahn'Qiraj"
+    local now = 0
+    local playerInCombat = true
+    local registrations = {}
+    local aceLibrary, aceEvent = makeAceLibraryStub(registrations)
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        aceLibrary = aceLibrary,
+        getTime = function()
+            return now
+        end,
+        unitAffectingCombat = function(unit)
+            if unit == "player" and playerInCombat then
+                return 1
+            end
+            return nil
+        end,
+    })
+
+    dispatch(ctx, "ADDON_LOADED", "BigWigs")
+    local handler = aceEvent.embeddedTarget
+
+    handler:BigWigs_RecvSync("BossEngaged", "The Bug Family", "Test")
+    dispatch(ctx, "PLAYER_REGEN_DISABLED")
+    now = 90
+    handler:BigWigs_RecvSync("BossDeath", "Princess Yauj", "Test")
+    now = 95
+    handler:BigWigs_RecvSync("BossDeath", "Lord Kri", "Test")
+
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: KILL The Bug Family ") == 1, "expected duplicate Bug Trio kills to be ignored")
+end
+
+local function testNormalizesBugTrioAliasesToSingleEncounterKey()
+    local zone = "Temple of Ahn'Qiraj"
+    local now = 0
+    local playerInCombat = true
+    local registrations = {}
+    local aceLibrary, aceEvent = makeAceLibraryStub(registrations)
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        aceLibrary = aceLibrary,
+        getTime = function()
+            return now
+        end,
+        unitAffectingCombat = function(unit)
+            if unit == "player" and playerInCombat then
+                return 1
+            end
+            return nil
+        end,
+    })
+
+    dispatch(ctx, "ADDON_LOADED", "BigWigs")
+    local handler = aceEvent.embeddedTarget
+
+    handler:BigWigs_RecvSync("BossEngaged", "Princess Yauj", "Test")
+    now = 5
+    handler:BigWigs_RecvSync("BossEngaged", "Lord Kri", "Test")
+    dispatch(ctx, "PLAYER_REGEN_DISABLED")
+    now = 80
+    handler:BigWigs_RecvSync("BossDeath", "Vem", "Test")
+
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_START: The Bug Family ") == 1, "expected Bug Trio aliases to share one start marker")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: KILL The Bug Family ") == 1, "expected Bug Trio aliases to share one kill marker")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_START: Princess Yauj ") == 0, "did not expect alias-specific Bug Trio start marker")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_START: Lord Kri ") == 0, "did not expect duplicate alias-specific Bug Trio start marker")
+end
+
+local function testNormalizesFourHorsemenAliasesToSingleEncounterKey()
+    local zone = "Naxxramas"
+    local now = 0
+    local playerInCombat = true
+    local registrations = {}
+    local aceLibrary, aceEvent = makeAceLibraryStub(registrations)
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        aceLibrary = aceLibrary,
+        getTime = function()
+            return now
+        end,
+        unitAffectingCombat = function(unit)
+            if unit == "player" and playerInCombat then
+                return 1
+            end
+            return nil
+        end,
+    })
+
+    dispatch(ctx, "ADDON_LOADED", "BigWigs")
+    local handler = aceEvent.embeddedTarget
+
+    handler:BigWigs_RecvSync("BossEngaged", "Sir Zeliek", "Test")
+    now = 5
+    handler:BigWigs_RecvSync("BossEngaged", "The Four Horsemen", "Test")
+    dispatch(ctx, "PLAYER_REGEN_DISABLED")
+    now = 80
+    handler:BigWigs_RecvSync("BossDeath", "Baron Rivendare", "Test")
+
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_START: The Four Horsemen ") == 1, "expected Four Horsemen aliases to share one start marker")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: KILL The Four Horsemen ") == 1, "expected Four Horsemen aliases to share one kill marker")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_START: Sir Zeliek ") == 0, "did not expect horseman-specific start marker")
+end
+
+local function testNormalizesTwinEmperorsAliasesToSingleEncounterKey()
+    local zone = "Temple of Ahn'Qiraj"
+    local now = 0
+    local playerInCombat = true
+    local registrations = {}
+    local aceLibrary, aceEvent = makeAceLibraryStub(registrations)
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        aceLibrary = aceLibrary,
+        getTime = function()
+            return now
+        end,
+        unitAffectingCombat = function(unit)
+            if unit == "player" and playerInCombat then
+                return 1
+            end
+            return nil
+        end,
+    })
+
+    dispatch(ctx, "ADDON_LOADED", "BigWigs")
+    local handler = aceEvent.embeddedTarget
+
+    handler:BigWigs_RecvSync("BossEngaged", "Emperor Vek'lor", "Test")
+    now = 8
+    handler:BigWigs_RecvSync("BossEngaged", "Emperor Vek'nilash", "Test")
+    dispatch(ctx, "PLAYER_REGEN_DISABLED")
+    now = 90
+    handler:BigWigs_RecvSync("BossDeath", "Emperor Vek'nilash", "Test")
+
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_START: Twin Emperors ") == 1, "expected Twin Emperors aliases to share one start marker")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: KILL Twin Emperors ") == 1, "expected Twin Emperors aliases to share one kill marker")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_START: Emperor Vek'lor ") == 0, "did not expect emperor-specific start marker")
+end
+
+local function testStillEmitsWipeForRealNonBugTrioEncounters()
+    local zone = "Onyxia's Lair"
+    local now = 0
+    local playerInCombat = false
+    local registrations = {}
+    local aceLibrary, aceEvent = makeAceLibraryStub(registrations)
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        aceLibrary = aceLibrary,
+        getTime = function()
+            return now
+        end,
+        unitAffectingCombat = function(unit)
+            if unit == "player" and playerInCombat then
+                return 1
+            end
+            return nil
+        end,
+    })
+
+    dispatch(ctx, "ADDON_LOADED", "BigWigs")
+    local handler = aceEvent.embeddedTarget
+
+    handler:BigWigs_RecvSync("BossEngaged", "Onyxia", "Test")
+    playerInCombat = true
+    dispatch(ctx, "PLAYER_REGEN_DISABLED")
+    playerInCombat = false
+    now = 60
+    handler:BigWigs_RebootModule("Onyxia")
+
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: WIPE Onyxia ") == 1, "expected real non-Bug Trio wipe marker")
+end
+
 local function testModeTransitionMatrix()
     local zone = "Zul'Gurub"
     local ctx = newHarness(function()
@@ -517,5 +737,11 @@ testEncounterMarkersIncludeServerTimeTag()
 testHooksSwclZoneToggleToPreserveManagedSession()
 testEnablesBigWigsTrackingOnAddonLoaded()
 testBigWigsEncounterCanStartSessionWhenIdle()
+testSuppressesBugTrioPrePullWipeNoise()
+testSuppressesDuplicateBugTrioKillMarkers()
+testNormalizesBugTrioAliasesToSingleEncounterKey()
+testNormalizesFourHorsemenAliasesToSingleEncounterKey()
+testNormalizesTwinEmperorsAliasesToSingleEncounterKey()
+testStillEmitsWipeForRealNonBugTrioEncounters()
 testModeTransitionMatrix()
 print("ok - CaptainsLog regression tests passed")

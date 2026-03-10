@@ -3,7 +3,7 @@
 ## Notes: Combat logging with session management for USS Enterprise Guild. Includes SuperWowCombatLogger.
 ## Author: USS Enterprise Guild (SuperWowCombatLogger by Shino/Pepopo)
 ## OptionalDeps: SuperWowCombatLogger, BigWigs
-## Version: 1.4.1
+## Version: 1.4.2
 ## DefaultState: enabled
 
 RPLLCollector.lua

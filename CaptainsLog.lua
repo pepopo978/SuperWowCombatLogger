@@ -18,6 +18,7 @@ local GetRealZoneText = GetRealZoneText
 local IsInInstance = IsInInstance
 local UnitAffectingCombat = UnitAffectingCombat
 local GetGameTime = GetGameTime
+local GetTime = GetTime
 local unpack = unpack or table.unpack
 local date = date
 local CHAT_PREFIX = "|cff00ff00[Captain's Log]|r "
@@ -99,9 +100,196 @@ local function EmitZoneTransition(fromZone, toZone, reason)
 end
 
 -- BigWigs encounter tracking (optional - only if BigWigs is loaded)
-local engagedBoss = nil
 local bwHandler = nil
 local bigWigsTrackingEnabled = false
+local encounterStates = {}
+local activeEncounterKey = nil
+
+local DEFAULT_PREPULL_WIPE_GRACE_SECONDS = 15
+
+local ENCOUNTER_ALIASES = {
+    ["the bug family"] = {
+        key = "aq40_bug_trio",
+        displayName = "The Bug Family",
+        prepullWipeGraceSeconds = 45,
+    },
+    ["princess yauj"] = {
+        key = "aq40_bug_trio",
+        displayName = "The Bug Family",
+        prepullWipeGraceSeconds = 45,
+    },
+    ["lord kri"] = {
+        key = "aq40_bug_trio",
+        displayName = "The Bug Family",
+        prepullWipeGraceSeconds = 45,
+    },
+    ["vem"] = {
+        key = "aq40_bug_trio",
+        displayName = "The Bug Family",
+        prepullWipeGraceSeconds = 45,
+    },
+    ["twin emperors"] = {
+        key = "aq40_twin_emperors",
+        displayName = "Twin Emperors",
+    },
+    ["emperor vek'lor"] = {
+        key = "aq40_twin_emperors",
+        displayName = "Twin Emperors",
+    },
+    ["emperor vek'nilash"] = {
+        key = "aq40_twin_emperors",
+        displayName = "Twin Emperors",
+    },
+    ["the four horsemen"] = {
+        key = "naxx_four_horsemen",
+        displayName = "The Four Horsemen",
+    },
+    ["sir zeliek"] = {
+        key = "naxx_four_horsemen",
+        displayName = "The Four Horsemen",
+    },
+    ["lady blaumeux"] = {
+        key = "naxx_four_horsemen",
+        displayName = "The Four Horsemen",
+    },
+    ["thane korth'azz"] = {
+        key = "naxx_four_horsemen",
+        displayName = "The Four Horsemen",
+    },
+    ["baron rivendare"] = {
+        key = "naxx_four_horsemen",
+        displayName = "The Four Horsemen",
+    },
+}
+
+local function ResetEncounterTracking()
+    encounterStates = {}
+    activeEncounterKey = nil
+end
+
+local function IsPlayerInCombat()
+    return UnitAffectingCombat and UnitAffectingCombat("player") and true or false
+end
+
+local function ResolveEncounterIdentity(name)
+    local encounterKey, encounterName = NormalizeZoneName(name)
+    if not encounterKey then
+        return nil, nil, nil
+    end
+
+    local alias = ENCOUNTER_ALIASES[encounterKey]
+    if alias then
+        return alias.key, alias.displayName, alias
+    end
+
+    return encounterKey, encounterName, nil
+end
+
+local function EmitEncounterStart(name)
+    local ts = FormatTimestamp()
+    local serverTimeTag = FormatServerTimeTag()
+    local message = "ENCOUNTER_START: " .. name
+    if serverTimeTag then
+        message = message .. " " .. serverTimeTag
+    end
+    CombatLogAdd(message .. " " .. ts)
+end
+
+local function EmitEncounterEnd(result, name)
+    local ts = FormatTimestamp()
+    local serverTimeTag = FormatServerTimeTag()
+    local message = "ENCOUNTER_END: " .. result .. " " .. name
+    if serverTimeTag then
+        message = message .. " " .. serverTimeTag
+    end
+    CombatLogAdd(message .. " " .. ts)
+end
+
+local function GetEncounterState(encounterKey)
+    local state = encounterStates[encounterKey]
+    if not state then
+        state = {}
+        encounterStates[encounterKey] = state
+    end
+    return state
+end
+
+local function GetEncounterElapsedSeconds(state)
+    if not state or not state.startedAt or not GetTime then
+        return 0
+    end
+    local now = GetTime()
+    if not now or now < state.startedAt then
+        return 0
+    end
+    return now - state.startedAt
+end
+
+local function MarkEncounterEngaged(encounterKey)
+    encounterKey = encounterKey or activeEncounterKey
+    if not encounterKey then
+        return
+    end
+
+    local state = encounterStates[encounterKey]
+    if not state or not state.active or state.terminalEmitted then
+        return
+    end
+
+    state.engaged = true
+end
+
+local function BeginEncounter(name)
+    local encounterKey, displayName, alias = ResolveEncounterIdentity(name)
+    if not encounterKey then
+        return nil
+    end
+
+    local state = GetEncounterState(encounterKey)
+    if state.active and not state.terminalEmitted then
+        if IsPlayerInCombat() then
+            state.engaged = true
+        end
+        activeEncounterKey = encounterKey
+        return encounterKey
+    end
+
+    state.active = true
+    state.terminalEmitted = false
+    state.displayName = displayName
+    state.startedAt = GetTime and GetTime() or nil
+    state.engaged = IsPlayerInCombat()
+    state.prepullWipeGraceSeconds = alias and alias.prepullWipeGraceSeconds or DEFAULT_PREPULL_WIPE_GRACE_SECONDS
+
+    activeEncounterKey = encounterKey
+    EmitEncounterStart(displayName)
+    return encounterKey
+end
+
+local function EndEncounter(encounterKey, result)
+    if not encounterKey then
+        return false
+    end
+
+    local state = encounterStates[encounterKey]
+    if not state or not state.active or state.terminalEmitted then
+        return false
+    end
+
+    if result == "WIPE" and not state.engaged then
+        local elapsed = GetEncounterElapsedSeconds(state)
+        if elapsed < (state.prepullWipeGraceSeconds or DEFAULT_PREPULL_WIPE_GRACE_SECONDS) then
+            return false
+        end
+    end
+
+    EmitEncounterEnd(result, state.displayName or encounterKey)
+    state.terminalEmitted = true
+    if result == "KILL" then
+        state.engaged = true
+    end
+    return true
+end
 
 local function EnsureBigWigsTracking()
     if bigWigsTrackingEnabled then
@@ -123,37 +311,27 @@ local function EnsureBigWigsTracking()
                 StartLogging(zone, "auto", "bigwigs_encounter_start")
             end
             if not SessionActive() then return end
+            if activeEncounterKey and IsPlayerInCombat() then
+                MarkEncounterEngaged(activeEncounterKey)
+            end
             if sync == "BossEngaged" and rest then
-                local ts = FormatTimestamp()
-                local serverTimeTag = FormatServerTimeTag()
-                engagedBoss = rest
-                local message = "ENCOUNTER_START: " .. rest
-                if serverTimeTag then
-                    message = message .. " " .. serverTimeTag
-                end
-                CombatLogAdd(message .. " " .. ts)
+                BeginEncounter(rest)
             elseif sync == "BossDeath" and rest then
-                local ts = FormatTimestamp()
-                local serverTimeTag = FormatServerTimeTag()
-                engagedBoss = nil
-                local message = "ENCOUNTER_END: KILL " .. rest
-                if serverTimeTag then
-                    message = message .. " " .. serverTimeTag
-                end
-                CombatLogAdd(message .. " " .. ts)
+                local encounterKey = ResolveEncounterIdentity(rest)
+                EndEncounter(encounterKey, "KILL")
             end
         end
 
         function bwHandler:BigWigs_RebootModule(moduleName)
-            if not SessionActive() or not engagedBoss then return end
-            local ts = FormatTimestamp()
-            local serverTimeTag = FormatServerTimeTag()
-            local message = "ENCOUNTER_END: WIPE " .. engagedBoss
-            if serverTimeTag then
-                message = message .. " " .. serverTimeTag
+            if not SessionActive() then return end
+            local encounterKey = activeEncounterKey
+            if moduleName then
+                local rebootKey = ResolveEncounterIdentity(moduleName)
+                if rebootKey and encounterStates[rebootKey] and encounterStates[rebootKey].active then
+                    encounterKey = rebootKey
+                end
             end
-            CombatLogAdd(message .. " " .. ts)
-            engagedBoss = nil
+            EndEncounter(encounterKey, "WIPE")
         end
     end
 
@@ -249,7 +427,7 @@ local function StopLogging(reason)
     LoggingCombat(0)
     sessionMode = "idle"
     sessionZone = nil
-    engagedBoss = nil
+    ResetEncounterTracking()
     DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[Captain's Log]|r Combat logging stopped")
 end
 
@@ -402,6 +580,8 @@ frame:SetScript("OnEvent", function()
         end
     elseif event == "PLAYER_ENTERING_WORLD" then
         EnsureSwclCompatibilityHook()
+    elseif event == "PLAYER_REGEN_DISABLED" then
+        MarkEncounterEngaged(activeEncounterKey)
     end
 
     SyncZoneLogging()
