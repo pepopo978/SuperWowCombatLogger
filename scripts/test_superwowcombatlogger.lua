@@ -313,6 +313,19 @@ local function testUsesAmbiguitySafeConsumeLabels()
     assertTrue(not containsText(ctx.logLines, "Power Mushroom"), "did not expect a guessed specific item label")
 end
 
+local function testPreservesExactUnambiguousConsumeLabels()
+    local ctx = newHarness({
+        unitNames = {
+            casterguid = "Chef",
+        },
+    })
+
+    dispatchHandler(ctx, "UNIT_CASTEVENT", "casterguid", nil, "CAST", 10667, 0)
+
+    assertTrue(containsText(ctx.logLines, "R.O.I.D.S."), "expected exact punctuation for unambiguous consume labels")
+    assertTrue(not containsText(ctx.logLines, "Rage of Ages"), "did not expect the old sanitized consume label")
+end
+
 local function testInitializesSpecialTargetsByZone()
     local ctx = newHarness({
         zone = "Blackwing Lair",
@@ -397,6 +410,7 @@ testRescansRaidRosterWhenHeadcountStaysFlat()
 testRetriesCombatantInfoWhenFirstScanHasNoGear()
 testEmitsOneAuthoritativeCastLinePerTrackedCast()
 testUsesAmbiguitySafeConsumeLabels()
+testPreservesExactUnambiguousConsumeLabels()
 testInitializesSpecialTargetsByZone()
 testNormalizesZoneInfoAliasesAndPreservesFallbackCase()
 testBroadensTradeDetectionBeyondAsciiWordNames()
