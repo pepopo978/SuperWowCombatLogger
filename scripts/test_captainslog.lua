@@ -44,6 +44,7 @@ local function newHarness(zoneProvider, opts)
 
     local registered = {}
     local onEvent = nil
+    local onUpdate = nil
     local loggingCalls = {}
     local combatLogLines = {}
     local chatLines = {}
@@ -75,6 +76,9 @@ local function newHarness(zoneProvider, opts)
     end
     _G.GetTime = opts.getTime or function()
         return 0
+    end
+    _G.IsInInstance = opts.isInInstance or function()
+        return nil
     end
     _G.DEFAULT_CHAT_FRAME = {
         AddMessage = function(_, msg)
@@ -111,6 +115,8 @@ local function newHarness(zoneProvider, opts)
         function frame:SetScript(name, fn)
             if name == "OnEvent" then
                 onEvent = fn
+            elseif name == "OnUpdate" then
+                onUpdate = fn
             end
         end
         return frame
@@ -121,6 +127,7 @@ local function newHarness(zoneProvider, opts)
     return {
         registered = registered,
         onEvent = onEvent,
+        onUpdate = onUpdate,
         loggingCalls = loggingCalls,
         combatLogLines = combatLogLines,
         chatLines = chatLines,
@@ -135,6 +142,12 @@ local function dispatch(ctx, eventName, arg1Value)
     _G.arg1 = arg1Value
     ctx.onEvent()
     _G.arg1 = nil
+end
+
+local function tick(ctx, elapsed)
+    if ctx.onUpdate then
+        ctx.onUpdate(elapsed or 0)
+    end
 end
 
 local function assertTrue(condition, message)
@@ -353,6 +366,42 @@ local function testZoneExitTransitionIncludesServerTimeTag()
     assertTrue(containsText(ctx.combatLogLines, "server_time=21:07"), "expected zone_exit transition marker to include server_time tag")
 end
 
+local function testAutoSessionStopsOnAreaTransitionIntoUntrackedInstance()
+    local zone = "Zul'Gurub"
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        isInInstance = function()
+            return 1
+        end,
+    })
+
+    dispatch(ctx, "ZONE_CHANGED_NEW_AREA")
+    zone = "Stratholme"
+    dispatch(ctx, "ZONE_CHANGED_NEW_AREA")
+
+    assertTrue(containsValue(ctx.loggingCalls, 0), "expected auto session to stop when entering an untracked instance")
+    assertTrue(containsPrefix(ctx.combatLogLines, "SESSION_END: "), "expected SESSION_END after leaving tracked raid content")
+end
+
+local function testPlainSubzoneUpdatesDoNotStopAutoSession()
+    local zone = "Zul'Gurub"
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        isInInstance = function()
+            return 1
+        end,
+    })
+
+    dispatch(ctx, "ZONE_CHANGED_NEW_AREA")
+    zone = "Hakkar's Altar"
+    dispatch(ctx, "ZONE_CHANGED")
+
+    assertTrue(not containsValue(ctx.loggingCalls, 0), "did not expect auto stop on plain subzone update")
+    assertTrue(not containsPrefix(ctx.combatLogLines, "SESSION_END: "), "did not expect SESSION_END on plain subzone update")
+end
+
 local function testHooksSwclZoneToggleToPreserveManagedSession()
     local zone = "Zul'Gurub"
     local swclCalled = 0
@@ -430,6 +479,126 @@ local function testEncounterMarkersIncludeServerTimeTag()
         containsPrefix(ctx.combatLogLines, "ENCOUNTER_END: KILL Echo of Medivh server_time=21:07 "),
         "expected ENCOUNTER_END: KILL marker to include server_time tag"
     )
+end
+
+local function testEncounterWipeWaitsForResolvedCombatEnd()
+    local zone = "Onyxia's Lair"
+    local now = 0
+    local playerInCombat = false
+    local raidInCombat = false
+    local registrations = {}
+    local aceLibrary, aceEvent = makeAceLibraryStub(registrations)
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        aceLibrary = aceLibrary,
+        getNumRaidMembers = function()
+            return 1
+        end,
+        getTime = function()
+            return now
+        end,
+        unitAffectingCombat = function(unit)
+            if unit == "player" then
+                return playerInCombat and 1 or nil
+            end
+            if unit == "raid1" then
+                return raidInCombat and 1 or nil
+            end
+            return nil
+        end,
+    })
+
+    dispatch(ctx, "ADDON_LOADED", "BigWigs")
+    local handler = aceEvent.embeddedTarget
+
+    handler:BigWigs_RecvSync("BossEngaged", "Onyxia", "Test")
+    playerInCombat = true
+    raidInCombat = true
+    dispatch(ctx, "PLAYER_REGEN_DISABLED")
+
+    now = 60
+    handler:BigWigs_RebootModule("Onyxia")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: WIPE Onyxia ") == 0, "did not expect wipe marker before combat fully resolves")
+
+    playerInCombat = false
+    dispatch(ctx, "PLAYER_REGEN_ENABLED")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: WIPE Onyxia ") == 0, "did not expect wipe marker while raid members remain in combat")
+
+    raidInCombat = false
+    tick(ctx)
+
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: WIPE Onyxia ") == 1, "expected wipe marker after resolved combat end")
+end
+
+local function testAliasZoneDoesNotEmitSyntheticZoneTransition()
+    local zone = "Ahn'Qiraj Temple"
+    local ctx = newHarness(function()
+        return zone
+    end)
+
+    dispatch(ctx, "ZONE_CHANGED_NEW_AREA")
+    dispatch(ctx, "ZONE_CHANGED")
+
+    assertTrue(countPrefix(ctx.combatLogLines, "ZONE_TRANSITION: ") == 0, "did not expect alias-only synthetic zone transition")
+end
+
+local function testRefreshesRaidLeaderWhenLeadershipChanges()
+    local zone = "Zul'Gurub"
+    local leader = "Alpha"
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        getNumRaidMembers = function()
+            return 2
+        end,
+        getRaidRosterInfo = function(index)
+            if index == 1 then
+                return leader, 2
+            end
+            if index == 2 then
+                return "Gamma", 0
+            end
+            return nil
+        end,
+    })
+
+    dispatch(ctx, "ZONE_CHANGED_NEW_AREA")
+
+    leader = "Beta"
+    assertTrue(ctx.registered["RAID_ROSTER_UPDATE"], "expected RAID_ROSTER_UPDATE to be registered")
+    dispatch(ctx, "RAID_ROSTER_UPDATE")
+
+    assertTrue(countPrefix(ctx.combatLogLines, "RAID_LEADER: Alpha ") == 1, "expected initial raid leader marker")
+    assertTrue(countPrefix(ctx.combatLogLines, "RAID_LEADER: Beta ") == 1, "expected refreshed raid leader marker after leadership changes")
+end
+
+local function testDelaysCombatEndUntilRaidLeavesCombat()
+    local zone = "Zul'Gurub"
+    local raidTwoInCombat = true
+    local ctx = newHarness(function()
+        return zone
+    end, {
+        getNumRaidMembers = function()
+            return 3
+        end,
+        unitAffectingCombat = function(unit)
+            if unit == "raid2" and raidTwoInCombat then
+                return 1
+            end
+            return nil
+        end,
+    })
+
+    dispatch(ctx, "ZONE_CHANGED_NEW_AREA")
+    dispatch(ctx, "PLAYER_REGEN_ENABLED")
+
+    assertTrue(not containsPrefix(ctx.combatLogLines, "COMBAT_END: "), "did not expect COMBAT_END before delayed raid resolution")
+
+    raidTwoInCombat = false
+    tick(ctx)
+
+    assertTrue(containsPrefix(ctx.combatLogLines, "COMBAT_END: "), "expected delayed COMBAT_END after the rest of the raid leaves combat")
 end
 
 local function testEnablesBigWigsTrackingOnAddonLoaded()
@@ -733,7 +902,13 @@ testStatusCommandReportsModeZoneAndLogging()
 testSessionTransitionMarkersIncludeReasons()
 testZoneEnterTransitionIncludesServerTimeTag()
 testZoneExitTransitionIncludesServerTimeTag()
+testAutoSessionStopsOnAreaTransitionIntoUntrackedInstance()
+testPlainSubzoneUpdatesDoNotStopAutoSession()
 testEncounterMarkersIncludeServerTimeTag()
+testEncounterWipeWaitsForResolvedCombatEnd()
+testAliasZoneDoesNotEmitSyntheticZoneTransition()
+testRefreshesRaidLeaderWhenLeadershipChanges()
+testDelaysCombatEndUntilRaidLeavesCombat()
 testHooksSwclZoneToggleToPreserveManagedSession()
 testEnablesBigWigsTrackingOnAddonLoaded()
 testBigWigsEncounterCanStartSessionWhenIdle()
