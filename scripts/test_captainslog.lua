@@ -842,6 +842,7 @@ local function testStillEmitsWipeForRealNonBugTrioEncounters()
     local zone = "Onyxia's Lair"
     local now = 0
     local playerInCombat = false
+    local raidInCombat = false
     local registrations = {}
     local aceLibrary, aceEvent = makeAceLibraryStub(registrations)
     local ctx = newHarness(function()
@@ -851,8 +852,14 @@ local function testStillEmitsWipeForRealNonBugTrioEncounters()
         getTime = function()
             return now
         end,
+        getNumRaidMembers = function()
+            return 1
+        end,
         unitAffectingCombat = function(unit)
             if unit == "player" and playerInCombat then
+                return 1
+            end
+            if unit == "raid1" and raidInCombat then
                 return 1
             end
             return nil
@@ -864,12 +871,18 @@ local function testStillEmitsWipeForRealNonBugTrioEncounters()
 
     handler:BigWigs_RecvSync("BossEngaged", "Onyxia", "Test")
     playerInCombat = true
+    raidInCombat = true
     dispatch(ctx, "PLAYER_REGEN_DISABLED")
     playerInCombat = false
     now = 60
     handler:BigWigs_RebootModule("Onyxia")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: WIPE Onyxia ") == 0, "did not expect wipe marker before combat end resolves")
+    dispatch(ctx, "PLAYER_REGEN_ENABLED")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: WIPE Onyxia ") == 0, "did not expect wipe marker while raid members remain in combat")
+    raidInCombat = false
+    tick(ctx)
 
-    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: WIPE Onyxia ") == 1, "expected real non-Bug Trio wipe marker")
+    assertTrue(countPrefix(ctx.combatLogLines, "ENCOUNTER_END: WIPE Onyxia ") == 1, "expected real non-Bug Trio wipe marker after combat end resolves")
 end
 
 local function testModeTransitionMatrix()

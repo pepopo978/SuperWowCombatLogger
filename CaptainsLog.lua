@@ -12,6 +12,9 @@ end
 local frame = CreateFrame("Frame")
 local sessionMode = "idle" -- "idle" | "auto" | "manual"
 local sessionZone = nil
+local pendingCombatResolution = false
+local lastRaidLeader = nil
+local RAID_ZONES
 
 local LoggingCombat = LoggingCombat
 local GetRealZoneText = GetRealZoneText
@@ -97,6 +100,42 @@ end
 local function EmitZoneTransition(fromZone, toZone, reason)
     local ts = FormatTimestamp()
     CombatLogAdd("ZONE_TRANSITION: from=" .. fromZone .. " to=" .. toZone .. " reason=" .. reason .. " " .. ts)
+end
+
+local function IsAreaTransitionEvent(eventName)
+    return eventName == "ZONE_CHANGED_NEW_AREA"
+        or eventName == "PLAYER_ENTERING_WORLD"
+        or eventName == "UPDATE_INSTANCE_INFO"
+end
+
+local function GetManagedZone(zoneKey, observedZone)
+    local raidZone = zoneKey and RAID_ZONES[zoneKey] or nil
+    return raidZone or observedZone, raidZone
+end
+
+local function GetRaidLeaderName()
+    if not GetRaidRosterInfo then
+        return nil
+    end
+    for i = 1, GetNumRaidMembers() do
+        local name, rank = GetRaidRosterInfo(i)
+        if rank == 2 and name then
+            return name
+        end
+    end
+    return nil
+end
+
+local function EmitRaidLeaderIfChanged()
+    if not SessionActive() then
+        return
+    end
+    local leader = GetRaidLeaderName()
+    if not leader or leader == lastRaidLeader then
+        return
+    end
+    lastRaidLeader = leader
+    CombatLogAdd("RAID_LEADER: " .. leader .. " " .. FormatTimestamp())
 end
 
 -- BigWigs encounter tracking (optional - only if BigWigs is loaded)
@@ -324,14 +363,7 @@ local function EnsureBigWigsTracking()
 
         function bwHandler:BigWigs_RebootModule(moduleName)
             if not SessionActive() then return end
-            local encounterKey = activeEncounterKey
-            if moduleName then
-                local rebootKey = ResolveEncounterIdentity(moduleName)
-                if rebootKey and encounterStates[rebootKey] and encounterStates[rebootKey].active then
-                    encounterKey = rebootKey
-                end
-            end
-            EndEncounter(encounterKey, "WIPE")
+            return
         end
     end
 
@@ -376,7 +408,7 @@ local RAID_ZONE_ALIASES = {
     ["Ruins of Ahn Qiraj"] = "Ruins of Ahn'Qiraj",
 }
 
-local RAID_ZONES = {}
+RAID_ZONES = {}
 for _, zoneName in ipairs(RAID_ZONE_NAMES) do
     local zoneKey = NormalizeZoneName(zoneName)
     RAID_ZONES[zoneKey] = zoneName
@@ -400,16 +432,14 @@ StartLogging = function(zone, mode, reason)
     LoggingCombat(1)
     sessionMode = mode
     sessionZone = zone
+    pendingCombatResolution = false
+    lastRaidLeader = nil
     local ts = FormatTimestamp()
     CombatLogAdd("SESSION_START: " .. zone .. " " .. ts)
-    if GetRaidRosterInfo then
-        for i = 1, GetNumRaidMembers() do
-            local name, rank = GetRaidRosterInfo(i)
-            if rank == 2 and name then
-                CombatLogAdd("RAID_LEADER: " .. name .. " " .. ts)
-                break
-            end
-        end
+    local leader = GetRaidLeaderName()
+    if leader then
+        lastRaidLeader = leader
+        CombatLogAdd("RAID_LEADER: " .. leader .. " " .. ts)
     end
     DEFAULT_CHAT_FRAME:AddMessage(CHAT_PREFIX .. "Combat logging started for " .. zone)
 end
@@ -427,6 +457,8 @@ local function StopLogging(reason)
     LoggingCombat(0)
     sessionMode = "idle"
     sessionZone = nil
+    pendingCombatResolution = false
+    lastRaidLeader = nil
     ResetEncounterTracking()
     DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[Captain's Log]|r Combat logging stopped")
 end
@@ -437,14 +469,17 @@ local function EnsureLoggingEnabled()
     end
 end
 
-local function SyncZoneLogging()
+local function SyncZoneLogging(eventName)
     local zoneKey, zoneText = NormalizeZoneName(GetRealZoneText())
     local observedZone = zoneText or "Unknown Zone"
-    local inInstance = IsInInstance and IsInInstance("player")
+    local managedZone, raidZone = GetManagedZone(zoneKey, observedZone)
+    local isAreaTransition = IsAreaTransitionEvent(eventName)
 
-    if SessionActive() and sessionZone ~= observedZone then
-        EmitZoneTransition(sessionZone, observedZone, "zone_change")
-        sessionZone = observedZone
+    if SessionActive() and sessionZone ~= managedZone then
+        EmitZoneTransition(sessionZone, managedZone, "zone_change")
+        if not (sessionMode == "auto" and isAreaTransition and not raidZone) then
+            sessionZone = managedZone
+        end
     end
 
     if sessionMode == "manual" then
@@ -453,7 +488,6 @@ local function SyncZoneLogging()
     end
 
     if sessionMode == "idle" then
-        local raidZone = zoneKey and RAID_ZONES[zoneKey] or nil
         if raidZone then
             StartLogging(raidZone, "auto", "zone_enter")
         end
@@ -461,8 +495,7 @@ local function SyncZoneLogging()
     end
 
     if sessionMode == "auto" then
-        local raidZone = zoneKey and RAID_ZONES[zoneKey] or nil
-        if not raidZone and not inInstance then
+        if isAreaTransition and not raidZone then
             StopLogging("zone_exit")
             return
         end
@@ -499,7 +532,7 @@ local function EnsureSwclCompatibilityHook()
             else
                 original()
             end
-            SyncZoneLogging()
+            SyncZoneLogging(name)
         end
         RPLL[key] = true
         wrapped = true
@@ -519,18 +552,21 @@ end
 
 local function OnCombatEnd()
     if not SessionActive() then
+        pendingCombatResolution = false
         return
     end
 
     local total = GetNumRaidMembers()
     if total == 0 then
+        pendingCombatResolution = false
         return
     end
 
     if UnitAffectingCombat then
         for i = 1, total do
             if UnitAffectingCombat("raid" .. i) then
-                return
+                pendingCombatResolution = true
+                return false
             end
         end
     end
@@ -555,10 +591,13 @@ local function OnCombatEnd()
 
     local ts = FormatTimestamp()
     CombatLogAdd("COMBAT_END: " .. alive .. "/" .. total .. " " .. ts)
+    EndEncounter(activeEncounterKey, "WIPE")
 
     if alive <= 3 or alive / total < 0.10 then
         CombatLogAdd("WIPE: " .. ts)
     end
+    pendingCombatResolution = false
+    return true
 end
 
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
@@ -567,6 +606,7 @@ frame:RegisterEvent("ZONE_CHANGED_INDOORS")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+frame:RegisterEvent("RAID_ROSTER_UPDATE")
 frame:RegisterEvent("ADDON_LOADED")
 
 EnsureSwclCompatibilityHook()
@@ -581,12 +621,22 @@ frame:SetScript("OnEvent", function()
     elseif event == "PLAYER_ENTERING_WORLD" then
         EnsureSwclCompatibilityHook()
     elseif event == "PLAYER_REGEN_DISABLED" then
+        pendingCombatResolution = false
         MarkEncounterEngaged(activeEncounterKey)
     end
 
-    SyncZoneLogging()
+    SyncZoneLogging(event)
 
     if event == "PLAYER_REGEN_ENABLED" then
+        pendingCombatResolution = true
+        OnCombatEnd()
+    elseif event == "RAID_ROSTER_UPDATE" then
+        EmitRaidLeaderIfChanged()
+    end
+end)
+
+frame:SetScript("OnUpdate", function()
+    if pendingCombatResolution then
         OnCombatEnd()
     end
 end)
