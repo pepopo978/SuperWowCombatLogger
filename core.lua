@@ -23,6 +23,7 @@ RPLL.NUM_PLAYERS_IN_COMBAT = 0
 
 RPLL.PlayerInformation = {}
 RPLL.LoggedCombatantInfo = {}
+RPLL.GuidNameCache = {}
 
 RPLL:RegisterEvent("RAID_ROSTER_UPDATE")
 RPLL:RegisterEvent("PARTY_MEMBERS_CHANGED")
@@ -58,7 +59,10 @@ local pairs = pairs
 local GetNumPartyMembers = GetNumPartyMembers
 local GetNumRaidMembers = GetNumRaidMembers
 local UnitIsPlayer = UnitIsPlayer
+local UnitClass = UnitClass
+local UnitRace = UnitRace
 local UnitSex = UnitSex
+local UnitExists = UnitExists
 local strlower = strlower
 local GetGuildInfo = GetGuildInfo
 local GetInventoryItemLink = GetInventoryItemLink
@@ -66,8 +70,10 @@ local strfind = string.find
 local Unknown = UNKNOWN
 local LoggingCombat = LoggingCombat
 local time = time
+local GetTime = GetTime
 local GetRealZoneText = GetRealZoneText
 local date = date
+local format = string.format
 local strjoin = string.join or function(delim, ...)
 	if type(arg) == 'table' then
 		return table.concat(arg, delim)
@@ -100,6 +106,53 @@ local specials_data = {
 	-- }
 }
 
+local function NormalizeZoneName(name)
+	if not name or name == "" then
+		return nil, nil
+	end
+
+	name = string.gsub(name, "\226\128\152", "'")
+	name = string.gsub(name, "\226\128\153", "'")
+	name = string.gsub(name, "\194\160", " ")
+	name = string.gsub(name, "^%s+", "")
+	name = string.gsub(name, "%s+$", "")
+	if name == "" then
+		return nil, nil
+	end
+
+	return strlower(name), name
+end
+
+local ZONE_INFO_ALIASES = {
+	["Ahn'Qiraj Temple"] = "Temple of Ahn'Qiraj",
+	["Ahn Qiraj Temple"] = "Temple of Ahn'Qiraj",
+	["Temple of Ahn Qiraj"] = "Temple of Ahn'Qiraj",
+	["Ahn'Qiraj"] = "Temple of Ahn'Qiraj",
+	["Ahn Qiraj"] = "Temple of Ahn'Qiraj",
+	["Ahn'Qiraj Ruins"] = "Ruins of Ahn'Qiraj",
+	["Ahn Qiraj Ruins"] = "Ruins of Ahn'Qiraj",
+	["Ruins of Ahn Qiraj"] = "Ruins of Ahn'Qiraj",
+}
+
+local function CanonicalizeZoneName(name)
+	local zoneKey, zoneText = NormalizeZoneName(name)
+	if not zoneKey then
+		return nil, nil
+	end
+
+	local canonicalText = ZONE_INFO_ALIASES[zoneText] or zoneText
+	return NormalizeZoneName(canonicalText)
+end
+
+local function UpdateSpecialTargetsForZone()
+	local _, zoneText = CanonicalizeZoneName(GetRealZoneText())
+	if zoneText then
+		specials = specials_data[zoneText]
+	else
+		specials = nil
+	end
+end
+
 local function strsplit(pString, pPattern)
 	local Table = {}
 	local fpat = "(.-)" .. pPattern
@@ -113,7 +166,7 @@ local function strsplit(pString, pPattern)
 		s, e, cap = strfind(pString, fpat, last_end)
 	end
 	if last_end <= strlen(pString) then
-		cap = strfind(pString, last_end)
+		cap = strsub(pString, last_end)
 		table.insert(Table, cap)
 	end
 	return Table
@@ -375,7 +428,7 @@ local trackedConsumes = {
 	--[25990] = "Delicious Birthday Cake",
 	[25990] = "Graccus Mince Meat Fruitcake",  -- also avoids 's
 
-	[1127] = "Graccus Homemade Meat Pie",  -- also avoids 's, low level
+	[1127] = "Graccu's Homemade Meat Pie",
 
 	--[435] = "Clam Chowder",
 	--[435] = "Tigule and Foror's Strawberry Ice Cream",
@@ -389,13 +442,13 @@ local trackedConsumes = {
 
 
 	-- renames to remove 's and other special syntax
-	[10667] = "Rage of Ages",
-	[57106] = "Medivhs Merlot",
-	[57107] = "Medivhs Merlot Blue Label",
-	[22790] = "Kreegs Stout Beatdown",
-	[57043] = "Danonzos Tel'Abim Delight",
-	[57045] = "Danonzos Tel'Abim Medley",
-	[57055] = "Danonzos Tel'Abim Surprise",
+	[10667] = "R.O.I.D.S.",
+	[57106] = "Medivh's Merlot",
+	[57107] = "Medivh's Merlot Blue",
+	[22790] = "Kreeg's Stout Beatdown",
+	[57043] = "Danonzo's Tel'Abim Delight",
+	[57045] = "Danonzo's Tel'Abim Medley",
+	[57055] = "Danonzo's Tel'Abim Surprise",
 }
 
 -- auto generated, manually add stuff in trackedConsumes instead
@@ -861,6 +914,93 @@ for key, val in pairs(dbConsumes) do
   end
 end
 
+local AMBIGUOUS_CONSUME_SPELLS = {
+	[10256] = true,
+	[10257] = true,
+	[1127] = true,
+	[1129] = true,
+	[1131] = true,
+	[11319] = true,
+	[1133] = true,
+	[1135] = true,
+	[1137] = true,
+	[17038] = true,
+	[17530] = true,
+	[17531] = true,
+	[17534] = true,
+	[17545] = true,
+	[18229] = true,
+	[18230] = true,
+	[19199] = true,
+	[22731] = true,
+	[24005] = true,
+	[24355] = true,
+	[24382] = true,
+	[24383] = true,
+	[24417] = true,
+	[24707] = true,
+	[24800] = true,
+	[24869] = true,
+	[25660] = true,
+	[25990] = true,
+	[2639] = true,
+	[29008] = true,
+	[29073] = true,
+	[4042] = true,
+	[430] = true,
+	[431] = true,
+	[432] = true,
+	[433] = true,
+	[434] = true,
+	[435] = true,
+	[438] = true,
+	[440] = true,
+	[45024] = true,
+	[45427] = true,
+	[45489] = true,
+	[5004] = true,
+	[5005] = true,
+	[5006] = true,
+	[5007] = true,
+	[673] = true,
+	[7396] = true,
+	[7737] = true,
+}
+
+local function ResolveTrackedLabel(spellID)
+	local trackedSpell = trackedSpells[spellID]
+	if trackedSpell then
+		return trackedSpell, false
+	end
+
+	local trackedConsume = trackedConsumes[spellID]
+	if not trackedConsume then
+		return nil, false
+	end
+
+	if AMBIGUOUS_CONSUME_SPELLS[spellID] then
+		return "Ambiguous Consumable (" .. tostring(spellID) .. ")", true
+	end
+
+	return trackedConsume, true
+end
+
+local function BuildRaidRosterSignature()
+	local count = GetNumRaidMembers()
+	if count == 0 then
+		return ""
+	end
+
+	local parts = {}
+	for i = 1, count do
+		local unit = "raid" .. i
+		local _, guid = UnitExists(unit)
+		parts[#parts + 1] = guid or UnitName(unit) or "nil"
+	end
+
+	return table.concat(parts, "|")
+end
+
 local function logPlayersInCombat()
 	local currentPlayersInCombat = 0
 	local totalPlayers = 0
@@ -918,7 +1058,7 @@ RPLL.PLAYER_REGEN_ENABLED = function()
 end
 
 RPLL.UNIT_DIED = function(guid)
-	local name = UnitName(guid) or "Unknown"
+	local name = RPLL.GuidNameCache[guid] or UnitName(guid) or "Unknown"
 	CombatLogAdd("UNIT_DIED:" .. name .. ":" .. guid)
 end
 
@@ -929,25 +1069,25 @@ local fmt_with_target = "CAST: %s %s %s(%s) on %s."
 local fmt_simple = "CAST: %s %s %s(%s)."
 
 local function LogCastEventV2(caster, target, event, spellID, castDuration)
-	if not (caster and spellID) then return end
-	if event == "MAINHAND" or event == "OFFHAND" then return end
+	if not (caster and spellID) then return false end
+	if event == "MAINHAND" or event == "OFFHAND" then return false end
 
 	-- cache lookup
 	local cachedSpell = spellCache[spellID]
 	local spell = cachedSpell and cachedSpell[1]
-	local rank = cachedSpell and cachedSpell[2]
+	local rank = cachedSpell and cachedSpell[2] or ""
 
 	if not spell then
 		-- Spell not cached yet? Call SpellInfo and cache the result.
 		spell,rank = SpellInfo(spellID)
 		if spell then
 			-- only cache Rank for things that have one. Some items have joke ranks!
-			rank = string.find(rank, "^Rank") and rank or ""
+			rank = rank and string.find(rank, "^Rank") and rank or ""
 			spellCache[spellID] = { spell, rank }
 		end
 	end
 
-	if not spell then return end
+	if not spell then return false end
 
 	local targetName -- = UnitName(target) or "Unknown"
 	local casterName = UnitName(caster) or "Unknown"
@@ -984,21 +1124,19 @@ local function LogCastEventV2(caster, target, event, spellID, castDuration)
 			CombatLogAdd(format(fmt_simple, casterName, verb, spell, spellID))
 		end
 	end
+
+	return true
 end
 
 -- kept for backwards compatibility with existing tools
 local function LogCastEventV1(caster, target, event, spellID, castDuration)
-	if not (trackedSpells[spellID] or trackedConsumes[spellID]) then
-		return
-	end
-
 	if event ~= "CAST" then
-		return
+		return false
 	end
 
-	local spell = trackedSpells[spellID] or trackedConsumes[spellID]
+	local spell, isConsume = ResolveTrackedLabel(spellID)
 	if not spell then
-		return
+		return false
 	end
 
 	local casterName = UnitName(caster) --get name from GUID
@@ -1008,21 +1146,26 @@ local function LogCastEventV1(caster, target, event, spellID, castDuration)
 		casterName = "Unknown" -- can happen before player name is queried from server
 	end
 
-	local verb = trackedConsumes[spellID] and " uses " or " casts "
+	local verb = isConsume and " uses " or " casts "
 	if targetName then
 		CombatLogAdd(casterName .. verb .. spell .. " on " .. targetName .. ".")
 	else
 		CombatLogAdd(casterName .. verb .. spell .. ".")
 	end
+
+	return true
 end
 
 RPLL.UNIT_CASTEVENT = function(caster, target, event, spellID, castDuration)
+	if LogCastEventV2(caster, target, event, spellID, castDuration) then
+		return
+	end
 	LogCastEventV1(caster, target, event, spellID, castDuration) -- for backwards compatibility
-	LogCastEventV2(caster, target, event, spellID, castDuration)
 end
 
 RPLL.ZONE_CHANGED_NEW_AREA = function()
 	LoggingCombat(IsInInstance("player"))
+	UpdateSpecialTargetsForZone()
 	this:grab_unit_information("player")
 	this:RAID_ROSTER_UPDATE()
 	this:PARTY_MEMBERS_CHANGED()
@@ -1032,6 +1175,7 @@ end
 
 RPLL.UPDATE_INSTANCE_INFO = function()
 	LoggingCombat(IsInInstance("player"))
+	UpdateSpecialTargetsForZone()
 	this:grab_unit_information("player")
 	this:RAID_ROSTER_UPDATE()
 	this:PARTY_MEMBERS_CHANGED()
@@ -1054,23 +1198,25 @@ RPLL.PLAYER_ENTERING_WORLD = function()
   -- Rate limiting cache for player info scanning (timestamps only, session-only)
   this.PlayerInformation = {}
 
+	UpdateSpecialTargetsForZone()
 	this:grab_unit_information("player")
 	this:RAID_ROSTER_UPDATE()
 	this:PARTY_MEMBERS_CHANGED()
 end
 
-local rcount = 0
+local lastRaidRosterSignature = nil
 RPLL.RAID_ROSTER_UPDATE = function()
-	local rnow = GetNumRaidMembers()
-	if rnow == rcount then
+	local rosterSignature = BuildRaidRosterSignature()
+	if rosterSignature == lastRaidRosterSignature then
 		return
 	end
+	local rnow = GetNumRaidMembers()
 	for i = 1, rnow do
 		if UnitName("raid" .. i) then
 			this:grab_unit_information("raid" .. i)
 		end
 	end
-	rcount = rnow
+	lastRaidRosterSignature = rosterSignature
 end
 
 local pcount = 0
@@ -1104,7 +1250,7 @@ end
 
 RPLL.CHAT_MSG_SYSTEM = function(msg)
 	-- "Iseut trades item Libram of the Faithful to Milkpress."
-	local trade = string.find(msg, "^%w+ trades item")
+	local trade = string.find(msg, " trades item ", 1, true)
 	if trade then
 		CombatLogAdd("LOOT_TRADE: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. msg)
 	end
@@ -1137,33 +1283,35 @@ function RPLL:QueueRaidIds()
 		return
 	end
 
-	local zone = strlower(GetRealZoneText())
+	local zoneKey, zoneText = CanonicalizeZoneName(GetRealZoneText())
 	local found = false
 	for i = 1, GetNumSavedInstances() do
 		local instance_name, instance_id = GetSavedInstanceInfo(i)
-		if zone == strlower(instance_name) then
+		local instanceKey = CanonicalizeZoneName(instance_name)
+		if zoneKey and zoneKey == instanceKey then
 			CombatLogAdd("ZONE_INFO: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. instance_name .. "&" .. instance_id)
 			found = true
 			break
 		end
 	end
 
-	if found == false then
-		CombatLogAdd("ZONE_INFO: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. zone .. "&0")
+	if found == false and zoneText then
+		CombatLogAdd("ZONE_INFO: " .. date("%d.%m.%y %H:%M:%S") .. "&" .. zoneText .. "&0")
 	end
 end
 
 function RPLL:grab_unit_information(unit)
 	local unit_name = UnitName(unit)
 	if UnitIsPlayer(unit) and unit_name ~= nil and unit_name ~= Unknown then
-    -- Check rate limiting using simple timestamp cache
-    local last_update = this.PlayerInformation[unit_name]
-    if last_update ~= nil and time() - last_update <= 30 then
+		-- Check rate limiting using simple timestamp cache
+		local now = time()
+		local last_update = this.PlayerInformation[unit_name]
+		if last_update ~= nil and now - last_update <= 30 then
 			return
 		end
 
-    -- Gather all info into local table
-    local info = {}
+		-- Gather all info into local table
+		local info = {}
 		info["last_update_date"] = date("%d.%m.%y %H:%M:%S")
 		info["name"] = unit_name
 
@@ -1264,12 +1412,13 @@ function RPLL:grab_unit_information(unit)
 		local exists, guid = UnitExists(unit)
 		if exists and guid then
 			info["guid"] = guid
+			RPLL.GuidNameCache[guid] = unit_name
 		end
 
-    -- Update timestamp cache
-    this.PlayerInformation[unit_name] = time()
-
-		log_combatant_info(info)
+		if log_combatant_info(info) then
+			-- Rate limiting only after we have a usable character snapshot.
+			this.PlayerInformation[unit_name] = now
+		end
 	end
 end
 
@@ -1291,7 +1440,7 @@ function log_combatant_info(character)
 
 		-- If all gear is nil, don't log
 		if num_nil_gear == 19 then
-			return
+			return false
 		end
 
 		local result = prep_value(character["name"]) .. "&"
@@ -1312,8 +1461,9 @@ function log_combatant_info(character)
 			CombatLogAdd(result_prefix .. result)
 			RPLL.LoggedCombatantInfo[result] = true
 		end
-
+		return true
 	end
+	return false
 end
 
 function prep_value(val)
