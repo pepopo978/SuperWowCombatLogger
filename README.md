@@ -23,6 +23,7 @@ We bundle SWCL in this addon on purpose:
 4. Wrapper features can integrate directly with SWCL output/flow.
 
 If standalone `SuperWowCombatLogger` is installed, the bundled copy exits early to avoid double-loading.
+That mixed setup is not supported if you need the pinned/tested behavior in this repo, because the standalone addon can bypass the packaged fixes documented below.
 
 ## What Our Wrapper Adds (Beyond SWCL)
 
@@ -38,7 +39,7 @@ Captain's Log adds session-aware control and metadata around SWCL logging:
   - `ZONE_TRANSITION`
   - `RAID_LEADER`
   - `COMBAT_END`, `WIPE`
-  - `ENCOUNTER_START`, `ENCOUNTER_END: KILL`, `ENCOUNTER_END: WIPE` (via BigWigs if available)
+  - `ENCOUNTER_START`, `ENCOUNTER_END: KILL`, `ENCOUNTER_END: WIPE` (via BigWigs engage/death signals plus resolved combat end)
 - Time metadata improvements:
   - timezone offset (`%z`) appended when client runtime supports it
   - `server_time=HH:MM` tag on zone enter/exit transitions and encounter start/end markers
@@ -58,11 +59,26 @@ This repo keeps SWCL behavior largely intact, but includes practical integration
   - reduced redundant player-info API calls
   - one-pass gear extraction in combatant info collection
 - Timestamp metadata updates in SWCL-emitted records (where applicable) to include timezone offset when supported.
+- Accuracy fixes for packaged logging:
+  - raid roster rescans follow roster identity, not just headcount
+  - combatant info retries if the first scan lands before gear data is available
+  - `UNIT_DIED` uses cached GUID-to-name resolution when direct lookup is unavailable
+  - `ZONE_INFO` normalizes known raid aliases while preserving display casing in fallback output
+  - tracked consume spell IDs with multiple valid items now emit an ambiguity-safe generic label instead of a guessed item name
+  - cast logging uses one authoritative emission path, with the legacy fallback only when the richer path cannot emit
 
 Notes:
 
 - Upstream SWCL logic findings are documented in `docs/superwow-findings/`.
 - `legacy/` contains original/legacy tooling retained for compatibility workflows.
+
+## Intentional Non-Fixes
+
+The following behaviors are still intentional in this packaged build:
+
+- Party-only `PLAYERS_IN_COMBAT` accuracy outside raids is not a target; this addon is operated for raid logging.
+- Idle BigWigs boss engages can still auto-start a session in the player's current zone; we prefer capturing unknown encounters over dropping those edge-case pulls.
+- The session-level wipe heuristic still treats near-total deaths as wipes even if a few players survive via effects like Feign Death, Divine Intervention, or Vanish.
 
 ## Requirements
 
