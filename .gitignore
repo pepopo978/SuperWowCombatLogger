@@ -1,6 +1,7 @@
 /core - Copy.lua
 /archive
 /__pycache__/
+/.worktrees/
 *.txt
 *.zip
 *.exe
