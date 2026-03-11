@@ -441,7 +441,9 @@ local trackedConsumes = {
 	[1129] = "Crunchy Frog",  -- also avoids 's, low level
 
 
-	-- renames to remove 's and other special syntax
+	-- Keep exact punctuation for unique item names. Ambiguous spell IDs are handled
+	-- separately, and downstream/legacy parsers can normalize these few cases without
+	-- forcing fake spellings into the source log.
 	[10667] = "R.O.I.D.S.",
 	[57106] = "Medivh's Merlot",
 	[57107] = "Medivh's Merlot Blue",
