@@ -157,12 +157,22 @@ def replace_instances(player_entries, filename):
         # Create a single entry for all timestamps
         player_entries = [("00/00 00:00:00.000", player_name)]
 
-    # Mob names with apostrophes have top priority
-    # only the first match will be replaced
+    # Compatibility shim for the historical formatted output: keep the source log's
+    # exact apostrophized names, but normalize a few known labels back to the old
+    # upload spelling before the generic possessive parser rewrites them.
+    # Only the first match will be replaced.
     mob_names_with_apostrophe = {
         "Onyxia's Elite Guard": "Onyxias Elite Guard",
         "Sartura's Royal Guard": "Sarturas Royal Guard",
+        "Kreeg's Stout Beatdown": "Kreegs Stout Beatdown",
+        "Medivh's Merlot": "Medivhs Merlot",
+        "Medivh's Merlot Blue": "Medivhs Merlot Blue",
         "Medivh's Merlot Blue Label": "Medivhs Merlot Blue Label",
+        "Danonzo's Tel'Abim Delight": "Danonzos Tel'Abim Delight",
+        "Danonzo's Tel'Abim Medley": "Danonzos Tel'Abim Medley",
+        "Danonzo's Tel'Abim Surprise": "Danonzos Tel'Abim Surprise",
+        "Graccu's Homemade Meat Pie": "Graccus Homemade Meat Pie",
+        "Graccu's Mince Meat Fruitcake": "Graccus Mince Meat Fruitcake",
         "Ima'ghaol, Herald of Desolation": "Imaghaol, Herald of Desolation",
     }
 
