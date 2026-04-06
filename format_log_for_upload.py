@@ -83,6 +83,21 @@ def handle_replacements(line, replacements):
     return line
 
 
+def line_contains_non_ignored_pet_owner(line, ignored_pet_names, player_names):
+    """
+    Return True when the line contains a ``Pet Name (Owner)`` style reference that
+    should be treated as a pet, excluding blacklisted NPCs in ignored_pet_names
+    and only when Owner is a known player name.
+    """
+    pet_owner_match = re.search(rf"([{L}][{L} ]+[{L}]) \(([{L}]+)\)", line)
+    if not pet_owner_match:
+        return False
+
+    pet_name_with_owner = f"{pet_owner_match.group(1)} ("
+    owner_name = pet_owner_match.group(2)
+    return pet_name_with_owner not in ignored_pet_names and owner_name in player_names
+
+
 def build_replacement_dicts(player_name):
     """
     Build all replacement dictionaries for a given player name.
@@ -156,6 +171,7 @@ def replace_instances(player_entries, filename):
         player_replacement_dicts[player_name] = build_replacement_dicts(player_name)
         # Create a single entry for all timestamps
         player_entries = [("00/00 00:00:00.000", player_name)]
+        unique_player_names = {player_name}
 
     # Mob names with apostrophes have top priority
     # only the first match will be replaced
@@ -236,14 +252,9 @@ def replace_instances(player_entries, filename):
     # collect pet names and change LOOT messages
     # 4/14 20:51:43.354  COMBATANT_INFO: 14.04.24 20:51:43&Hunter&HUNTER&Dwarf&2&PetName <- pet name
     pet_renames = set()  # rename pets that have the same name their owner
-    pet_names = set()
-    owner_names = set()
+    combatant_names = set(unique_player_names)
 
     ignored_pet_names = {"Razorgore the Untamed (", "Deathknight Understudy (", "Naxxramas Worshipper ("}
-
-    # associate common summoned pets with their owners as well
-    summoned_pet_names = {"Greater Feral Spirit", "Battle Chicken", "Arcanite Dragonling", "The Lost", "Minor Arcane Elemental", "Scytheclaw Pureborn", "Explosive Trap I", "Explosive Trap II", "Explosive Trap III", "Sproutling", "Spirit Protector", "Hellfire Imp", "Infernal", "Doomguard", "Felguard", "Onyxian Whelp", "Avatar of Vengeance"}
-    summoned_pet_owner_regex = rf"([{L}][{L} ]+[{L}]) \(([{L}]+)\)"
 
     for i, _ in enumerate(lines):
         # DPSMate logs have " 's" already which will break some of our parsing, remove the space
@@ -251,6 +262,7 @@ def replace_instances(player_entries, filename):
         if "COMBATANT_INFO" in lines[i]:
             try:
                 line_parts = lines[i].split("&")
+                combatant_names.add(line_parts[1])
                 pet_name = line_parts[5]
                 if pet_name != "nil" and pet_name not in ignored_pet_names:
                     owner_name = line_parts[1]
@@ -260,9 +272,6 @@ def replace_instances(player_entries, filename):
                         pet_rename_replacements[rf"{pet_name} \({owner_name}\)"] = f"{pet_name}Pet ({owner_name})"
 
                         line_parts[5] = f"{pet_name}Pet"
-
-                    pet_names.add(f"{pet_name}")
-                    owner_names.add(f"({line_parts[1]})")
                 else:
                     # remove pet name from uploaded combatant info, can cause player to not appear in logs if pet name
                     # is a player name or ability name.  Don't even think legacy displays pet info anyways.
@@ -275,15 +284,7 @@ def replace_instances(player_entries, filename):
                 print(e)
         elif "LOOT:" in lines[i]:
             lines[i] = handle_replacements(lines[i], loot_replacements)
-        else:
-            for summoned_pet_name in summoned_pet_names:
-                if summoned_pet_name in lines[i]:
-                    match = re.search(summoned_pet_owner_regex, lines[i])
-                    if match:
-                        pet_names.add(summoned_pet_name)
-                        owner_names.add(f"({match.group(2)})")
 
-    print(f"The following pet owners will have their pet hits/crits/misses/spells associated with them: {owner_names}")
     if pet_renames:
         print(f"The following pets will be renamed to avoid having the same name as their owner: {pet_renames}")
 
@@ -298,15 +299,10 @@ def replace_instances(player_entries, filename):
             lines[i] = handle_replacements(lines[i], pet_rename_replacements)
 
         # handle pets
-        for owner_name in owner_names:
-            if owner_name in lines[i]:
-                # ignore pet dying
-                if "dies." in lines[i] or "is killed by" in lines[i]:
-                    continue
-
-                # check if line contains any ignored pet names
-                if not any(ignored_pet_name in lines[i] for ignored_pet_name in ignored_pet_names):
-                    lines[i] = handle_replacements(lines[i], pet_replacements)
+        if line_contains_non_ignored_pet_owner(lines[i], ignored_pet_names, combatant_names):
+            # ignore pet dying
+            if "dies." not in lines[i] and "is killed by" not in lines[i]:
+                lines[i] = handle_replacements(lines[i], pet_replacements)
 
         # if line contains you/You
         if "you" in lines[i] or "You" in lines[i] or "dodged." in lines[i]:
